@@ -1,6 +1,6 @@
-########################################################################################################################
-# Resource group
-########################################################################################################################
+##############################################################################
+# Resource Group
+##############################################################################
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
@@ -10,22 +10,141 @@ module "resource_group" {
   existing_resource_group_name = var.resource_group
 }
 
-########################################################################################################################
-# COS
-########################################################################################################################
+#############################################################################
+# Provision VPC
+#############################################################################
 
-#
-# Developer tips:
-#   - Call the local module / modules in the example to show how they can be consumed
-#   - include the actual module source as a code comment like below so consumers know how to consume from correct location
-#
-
-module "cos" {
-  source = "../.."
-  # remove the above line and uncomment the below 2 lines to consume the module from the registry
-  # source            = "terraform-ibm-modules/<replace>/ibm"
-  # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "${var.prefix}-cos"
+module "vpc" {
+  source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
+  version           = "8.15.10"
   resource_group_id = module.resource_group.resource_group_id
-  resource_tags     = var.resource_tags
+  region            = var.region
+  prefix            = var.prefix
+  tags              = var.resource_tags
+  name              = format("%s-vpc", var.name)
+  subnets = {
+    zone-1 = [
+      {
+        name           = "subnet-a"
+        cidr           = "10.10.10.0/24"
+        public_gateway = true
+        acl_name       = "vpc-acl"
+        no_addr_prefix = false
+      }
+  ] }
+  network_acls = [
+    {
+      name                         = "vpc-acl"
+      add_ibm_cloud_internal_rules = true
+      add_vpc_connectivity_rules   = true
+      prepend_ibm_rules            = true
+      rules = [
+        {
+          name      = "allow-all-22-inbound"
+          action    = "allow"
+          direction = "inbound"
+          tcp = {
+            port_min = 22
+            port_max = 22
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-all-22-inbound-response"
+          action    = "allow"
+          direction = "outbound"
+          tcp = {
+            source_port_min = 22
+            source_port_max = 22
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-https-outbound"
+          action    = "allow"
+          direction = "outbound"
+          tcp = {
+            port_min = 443
+            port_max = 443
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-https-outbound-response"
+          action    = "allow"
+          direction = "inbound"
+          tcp = {
+            source_port_min = 443
+            source_port_max = 443
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-http-outbound"
+          action    = "allow"
+          direction = "outbound"
+          tcp = {
+            port_min = 80
+            port_max = 80
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-http-outbound-response"
+          action    = "allow"
+          direction = "inbound"
+          tcp = {
+            source_port_min = 80
+            source_port_max = 80
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-nfs-outbound"
+          action    = "allow"
+          direction = "outbound"
+          tcp = {
+            port_min = 2049
+            port_max = 2049
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-nfs-inbound-response"
+          action    = "allow"
+          direction = "inbound"
+          tcp = {
+            source_port_min = 2049
+            source_port_max = 2049
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        }
+      ]
+    }
+  ]
+}
+
+#############################################################################
+# Create File Storage with VPC Access control mode
+#############################################################################
+
+module "file_storage" {
+  source            = "../../"
+  name              = var.name
+  resource_group_id = module.resource_group.resource_group_id
+  size              = 10
+  iops              = 100
+  zone              = var.zone
+  vpc_mount_targets = [module.vpc.vpc_id]
+  replica_name      = var.replica_name
+  replica_cron_spec = var.replica_cron_spec
+  replica_zone      = var.replica_zone
 }

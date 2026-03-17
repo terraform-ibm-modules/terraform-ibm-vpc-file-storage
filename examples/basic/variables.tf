@@ -1,39 +1,55 @@
-########################################################################################################################
-# Input variables
-########################################################################################################################
-
-#
-# Module developer tips:
-#   - Examples are references that consumers can use to see how the module can be consumed. They are not designed to be
-#     flexible re-usable solutions for general consumption, so do not expose any more variables here and instead hard
-#     code things in the example main.tf with code comments explaining the different configurations.
-#   - For the same reason as above, do not add default values to the example inputs.
-#
-
 variable "ibmcloud_api_key" {
   type        = string
-  description = "The IBM Cloud API Key."
+  description = "The IBM Cloud API Key required for authentication and provisioning resources. This is sensitive information and should be kept secure."
   sensitive   = true
 }
-
 variable "region" {
   type        = string
-  description = "Region to provision all resources created by this example."
+  description = "The IBM Cloud region where all resources will be deployed. Example values: 'us-south', 'eu-gb', 'au-syd'."
+  default     = "us-south"
 }
-
-variable "prefix" {
-  type        = string
-  description = "A string value to prefix to all resources created by this example."
-}
-
 variable "resource_group" {
   type        = string
-  description = "The name of an existing resource group to provision resources in to. If not set a new resource group will be created using the prefix variable."
+  description = "An existing resource group name to use for this example, if unset a new resource group will be created"
+  default     = null
+}
+variable "prefix" {
+  description = "The prefix that you would like to append to your resources"
+  type        = string
+  default     = "fs"
+}
+variable "resource_tags" {
+  description = "List of Tags for the resource created"
+  type        = list(string)
   default     = null
 }
 
-variable "resource_tags" {
-  type        = list(string)
-  description = "List of resource tag to associate with all resource instances created by this example."
-  default     = []
+variable "zone" {
+  description = "Region where VPC will be created. To find your VPC region, use `ibmcloud is regions` command to find available regions."
+  type        = string
+  default     = "us-south-1"
+}
+
+variable "name" {
+  description = "Base name for the file share"
+  type        = string
+  default     = "fs"
+}
+
+variable "replica_name" {
+  description = "Replica share name (optional)"
+  type        = string
+  default     = "rep1"
+}
+
+variable "replica_zone" {
+  description = "Replica zone (optional)"
+  type        = string
+  default     = "us-south-2"
+}
+
+variable "replica_cron_spec" {
+  description = "Replica schedule cron spec (optional)"
+  type        = string
+  default     = "0 */5 * * *"
 }
