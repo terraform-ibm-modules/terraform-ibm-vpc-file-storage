@@ -37,19 +37,19 @@ variable "name" {
 }
 
 variable "replica_name" {
-  description = "Replica share name (optional)"
+  description = "Replica share name"
   type        = string
   default     = "rep1"
 }
 
 variable "replica_zone" {
-  description = "Replica zone (optional)"
+  description = "Replica zone"
   type        = string
   default     = "us-south-2"
 }
 
 variable "replica_cron_spec" {
-  description = "Replica schedule cron spec (optional)"
+  description = "Replica schedule cron spec"
   type        = string
   default     = "0 */5 * * *"
 }

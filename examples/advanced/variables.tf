@@ -80,7 +80,7 @@ variable "zone" {
 }
 
 variable "replica_name" {
-  description = "Replica share name (optional)"
+  description = "Replica share name"
   type        = string
   default     = "rep1"
 }

@@ -9,6 +9,9 @@ module "resource_group" {
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
 }
+locals {
+  prefix = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
+}
 
 #############################################################################
 # Provision VPC
@@ -138,7 +141,7 @@ module "vpc" {
 
 module "file_storage" {
   source            = "../../"
-  name              = var.name
+  name              = "${local.prefix}-${var.name}"
   resource_group_id = module.resource_group.resource_group_id
   size              = 10
   iops              = 100
