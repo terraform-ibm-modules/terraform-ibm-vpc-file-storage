@@ -113,7 +113,7 @@ You need the following permissions to run this module.
 | <a name="input_initial_owner_gid"></a> [initial\_owner\_gid](#input\_initial\_owner\_gid) | GID for the root of the file share. Use >= 100 (preferably >= 10000) to avoid reserved ranges. | `number` | `10000` | no |
 | <a name="input_initial_owner_uid"></a> [initial\_owner\_uid](#input\_initial\_owner\_uid) | UID for the root of the file share. Use >= 10000 to avoid reserved ranges. | `number` | `10000` | no |
 | <a name="input_iops"></a> [iops](#input\_iops) | The maximum input/output operation performance bandwidth per second for the file share. | `number` | `null` | no |
-| <a name="input_kms_encryption_enabled"></a> [kms\_encryption\_enabled](#input\_kms\_encryption\_enabled) | Enable Key management | `bool` | `false` | no |
+| <a name="input_kms_encryption_enabled"></a> [kms\_encryption\_enabled](#input\_kms\_encryption\_enabled) | Enable Key management , if set to `false` IBM-managed keys are used by default | `bool` | `false` | no |
 | <a name="input_name"></a> [name](#input\_name) | Base name for the file share | `string` | `null` | no |
 | <a name="input_origin_share_crn"></a> [origin\_share\_crn](#input\_origin\_share\_crn) | CRN of origin file share. Required when creating cross account accessor Share | `string` | `null` | no |
 | <a name="input_profile"></a> [profile](#input\_profile) | File storage profiles | `string` | `"dp2"` | no |

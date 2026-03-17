@@ -20,3 +20,85 @@ variable "region" {
   type        = string
   description = "Region to provision all resources created by this example."
 }
+variable "resource_group" {
+  type        = string
+  description = "An existing resource group name to use for this example, if unset a new resource group will be created"
+  default     = null
+}
+variable "prefix" {
+  description = "The prefix that you would like to append to your resources"
+  type        = string
+  default     = "fs"
+}
+
+variable "resource_tags" {
+  description = "List of Tags for the resource created"
+  type        = list(string)
+  default     = null
+}
+
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the VSI resources created by the module."
+  default     = []
+}
+
+variable "user_data" {
+  description = "The user data that automatically performs common configuration tasks or runs scripts. When using the user_data variable in your configuration, it's essential to provide the content in the correct format for it to be properly recognized by the terraform. Use <<-EOT and EOT to enclose your user_data content to ensure it's passed as multi-line string. [Learn more](https://cloud.ibm.com/docs/secure-infrastructure-vpc?topic=secure-infrastructure-vpc-user-data)"
+  type        = string
+  default     = <<-EOT
+#!/bin/bash
+
+cat > /etc/profile.d/welcome.sh << 'EOF'
+#!/bin/bash
+if [ -t 0 ] && [ "$PS1" ]; then
+    echo "=========================================="
+    echo "Welcome to Your IBM Cloud VSI!"
+    echo "=========================================="
+    echo "Server Information:"
+    echo "- Hostname: $(hostname)"
+    echo "- IP Address: $(hostname -I | awk '{print $1}')"
+    echo "- OS: $(if [ -f /etc/os-release ]; then grep PRETTY_NAME /etc/os-release | cut -d'"' -f2; elif [ -f /etc/redhat-release ]; then cat /etc/redhat-release; else uname -s; fi)"
+    echo ""
+fi
+EOF
+
+chmod +x /etc/profile.d/welcome.sh
+EOT
+}
+
+variable "name" {
+  description = "Base name for the file share"
+  type        = string
+  default     = "fs"
+}
+
+variable "zone" {
+  description = "Region where VPC will be created. To find your VPC region, use `ibmcloud is regions` command to find available regions."
+  type        = string
+  default     = "us-south-1"
+}
+
+variable "replica_name" {
+  description = "Replica share name (optional)"
+  type        = string
+  default     = "rep1"
+}
+
+variable "replica_zone" {
+  description = "Replica zone for cross-regional replica"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "replica_region" {
+  description = "Replica region for cross-regional replica"
+  type        = string
+  default     = "us-east"
+}
+
+variable "replica_cron_spec" {
+  description = "Replica schedule cron spec"
+  type        = string
+  default     = "0 */5 * * *"
+}

@@ -165,7 +165,11 @@ variable "skip_iam_share_authorization_policy" {
 }
 
 variable "kms_encryption_enabled" {
-  description = "Enable Key management"
+  description = "Enable Key management , if set to `false` IBM-managed keys are used by default"
   type        = bool
   default     = false
+  validation {
+    condition     = !(var.kms_encryption_enabled && var.encryption_key_crn == null)
+    error_message = "encryption_key_crn must be provided when kms_encryption_enabled is true."
+  }
 }

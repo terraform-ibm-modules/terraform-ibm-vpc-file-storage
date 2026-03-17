@@ -14,8 +14,8 @@ The text below should describe exactly what resources are provisioned / configur
 An end-to-end basic example that will provision the following:
 - A new resource group if one is not passed in.
 - A new VPC with 1 subnet
-- A File Storage instance with VPC mode access control mode
-- A Replica of the File Storage instance in another aviability zone of the File Storage instance region
+- A File Storage instance with VPC access control mode
+- A Replica of the File Storage instance in another aviability zone of the same region as the File Storage instance
 
 <!-- BEGIN SCHEMATICS DEPLOY TIP HOOK -->
 :information_source: Ctrl/Cmd+Click or right-click on the Schematics deploy button to open in a new tab
