@@ -9,11 +9,10 @@ locals {
 ##############################################################################
 
 resource "ibm_is_share" "share" {
-  # One “main” share always created
   name           = var.name
-  profile        = var.profile
-  size           = var.size
-  iops           = var.iops
+  profile        = !local.is_accessor ? var.profile : null
+  size           = !local.is_accessor ? var.size : null
+  iops           = !local.is_accessor ? var.iops : null
   resource_group = var.resource_group_id
   zone           = local.is_standard ? var.zone : null
 
@@ -23,9 +22,9 @@ resource "ibm_is_share" "share" {
 
   allowed_transit_encryption_modes = local.is_standard && length(var.sg_mount_targets) > 0 ? ["ipsec", "none"] : null
   access_control_mode              = local.is_standard ? (length(var.sg_mount_targets) > 0 ? "security_group" : "vpc") : null
-  allowed_access_protocols         = ["nfs4"]
+  allowed_access_protocols         = !local.is_accessor ? ["nfs4"] : null
   dynamic "initial_owner" {
-    for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) ? [1] : []
+    for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) && !local.is_accessor ? [1] : []
     content {
       uid = var.initial_owner_uid
       gid = var.initial_owner_gid
@@ -41,9 +40,10 @@ resource "ibm_is_share" "share" {
   }
 
   dynamic "origin_share" {
-    for_each = local.is_accessor ? [1] : []
+    for_each = local.is_accessor ? [var.create_share.origin_share] : []
     content {
-      crn = var.create_share.origin_share_crn
+      crn = try(origin_share.value.crn, null)
+      id  = try(origin_share.value.id, null)
     }
   }
 

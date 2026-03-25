@@ -49,7 +49,11 @@ variable "create_share" {
     }))
 
     # accessor mode
-    origin_share_crn = optional(string)
+    origin_share = optional(object({
+      crn = optional(string)
+      id  = optional(string)
+    }))
+
   })
 
   default = {
@@ -70,19 +74,24 @@ variable "create_share" {
         try(var.create_share.origin_share_crn, null) == null
       )
     )
-    error_message = "When mode=standard: zone is required and source_snapshot/origin_share_crn must not be set."
+    error_message = "When mode=standard: zone is required and source_snapshot,origin_share_crn must not be set."
   }
 
   validation {
     condition = (
       var.create_share.mode != "accessor" ||
       (
-        try(var.create_share.origin_share_crn, null) != null &&
+        try(var.create_share.origin_share, null) != null &&
         try(var.zone, null) == null &&
-        try(var.create_share.source_snapshot, null) == null
+        try(var.create_share.source_snapshot, null) == null &&
+        (
+          (try(var.create_share.origin_share.crn, null) != null) !=
+          (try(var.create_share.origin_share.id, null) != null)
+        )
+
       )
     )
-    error_message = "When mode=accessor: origin_share_crn is required and zone/source_snapshot must not be set."
+    error_message = "When mode=accessor: origin_share is required; set exactly one of origin_share.crn or origin_share.id; and zone,source_snapshot must not be set."
   }
 
   validation {
@@ -98,7 +107,7 @@ variable "create_share" {
         )
       )
     )
-    error_message = "When mode=snapshot: source_snapshot is required; set exactly one of source_snapshot.crn or source_snapshot.id; and do not set zone/origin_share_crn."
+    error_message = "When mode=snapshot: source_snapshot is required; set exactly one of source_snapshot.crn or source_snapshot.id; and do not set zone,origin_share_crn."
   }
 }
 
