@@ -106,17 +106,17 @@ variable "create_share" {
 variable "zone" {
   description = "Zone where the file share will be created, use `ibmcloud is zones` command in the target region to find zones available for each region."
   type        = string
-  default     = "us-south"
+  default     = null
 }
 
 variable "profile" {
   type        = string
-  description = "File storage profiles"
+  description = "Storage profile with wich the file storage instance will be created "
   default     = "dp2"
 
   validation {
     condition     = var.profile == "dp2"
-    error_message = "Currently only \"dp2\" profile is supported by this module"
+    error_message = "Only \"dp2\" is supported by this module currently. Other profiles (for example \"rfs\") are intentionally not supported yet due to limited availability refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)"
   }
 
 }
@@ -161,7 +161,7 @@ variable "initial_owner_gid" {
 }
 
 variable "replica" {
-  description = "Optional replica share configuration. If null, no replica is created. Note: this can create replica only in anotheravailability zone of the same region as this File Storage instance"
+  description = "Replica share configuration. If null, no replica is created. Note: this can create replica only in another availability zone of the same region as this File Storage instance"
   type = object({
     name      = string
     zone      = string
@@ -195,16 +195,64 @@ variable "vpc_mount_targets" {
 }
 
 variable "sg_mount_targets" {
-  type = list(object({
-    subnet_id          = string
-    security_group_ids = list(string)
-    transit_encryption = optional(string, "none")
-  }))
-  default     = []
   description = "Security-group based mount targets . If set the file storage is created with Security Group access mode"
+  type = list(object({
+    # Optional: use an existing VNI
+    vni_id = optional(string)
+
+    # VNI prototype args (used when vni_id is not set)
+    subnet_id                     = optional(string)
+    security_group_ids            = optional(list(string), [])
+    resource_group_id             = optional(string)
+    protocol_state_filtering_mode = optional(string)
+
+    # Reserved IP / Primary IP options
+    primary_ip = optional(object({
+      reserved_ip = optional(string)
+      auto_delete = optional(bool, true)
+      address     = optional(string)
+      name        = optional(string)
+    }))
+
+    # Mount target settings
+    transit_encryption = optional(string, "none")
+    access_protocol    = optional(string, "nfs4")
+  }))
+  default = []
   validation {
-    condition     = var.create_share.mode == "standard" || length(var.sg_mount_targets) == 0
-    error_message = "sg_mount_targets can only be set when create_share.mode is \"standard\"."
+    condition = alltrue([
+      for mt in var.sg_mount_targets :
+      (
+        try(mt.vni_id, null) == null
+        ||
+        (
+          try(mt.subnet_id, null) == null &&
+          length(try(mt.security_group_ids, [])) == 0 &&
+          try(mt.resource_group_id, null) == null &&
+          try(mt.protocol_state_filtering_mode, null) == null &&
+          try(mt.primary_ip, null) == null
+        )
+      )
+    ])
+    error_message = "Within sg_mount_targets if vni_id is set, other VNI prototype fields (subnet_id, security_group_ids, resource_group_id, protocol_state_filtering_mode, primary_ip) must not be set."
+  }
+  validation {
+    condition = alltrue([
+      for mt in var.sg_mount_targets :
+      (
+        try(mt.primary_ip, null) == null
+        ||
+        (
+          try(mt.primary_ip.reserved_ip, null) == null
+          ||
+          (
+            try(mt.primary_ip.address, null) == null &&
+            try(mt.primary_ip.name, null) == null
+          )
+        )
+      )
+    ])
+    error_message = "Within sg_mount_targets if primary_ip, reserved_ip is mutually exclusive with address and name (and auto_delete if you choose to enforce strictly)."
   }
 }
 

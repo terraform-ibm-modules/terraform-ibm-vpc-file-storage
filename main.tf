@@ -23,7 +23,7 @@ resource "ibm_is_share" "share" {
 
   allowed_transit_encryption_modes = local.is_standard && length(var.sg_mount_targets) > 0 ? ["ipsec", "none"] : null
   access_control_mode              = local.is_standard ? (length(var.sg_mount_targets) > 0 ? "security_group" : "vpc") : null
-
+  allowed_access_protocols         = ["nfs4"]
   dynamic "initial_owner" {
     for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) ? [1] : []
     content {
@@ -149,8 +149,9 @@ locals {
 resource "ibm_is_share_mount_target" "mount_targets" {
   for_each = local.mount_targets
 
-  share = ibm_is_share.share.id
-  name  = format("%s-mount-target-%s", var.name, each.key)
+  share           = ibm_is_share.share.id
+  name            = format("%s-mount-target-%s", var.name, each.key)
+  access_protocol = try(each.value.access_protocol, "nfs4")
 
   vpc = each.value.type == "vpc" ? each.value.vpc_id : null
 
@@ -159,13 +160,25 @@ resource "ibm_is_share_mount_target" "mount_targets" {
   dynamic "virtual_network_interface" {
     for_each = each.value.type == "sg" ? [1] : []
     content {
-      name            = format("%s-fs-vni-%s", var.name, each.key)
-      subnet          = each.value.subnet_id
-      resource_group  = var.resource_group_id
-      security_groups = each.value.security_group_ids
+      # If using existing VNI
+      id = try(each.value.vni_id, null)
 
-      primary_ip {
-        name = format("%s-fs-pip-%s", var.name, each.key)
+      # If creating VNI
+      name            = try(each.value.vni_id, null) == null ? format("%s-fs-vni-%s", var.name, each.key) : null
+      subnet          = try(each.value.subnet_id, null)
+      resource_group  = try(each.value.resource_group_id, null)
+      security_groups = try(each.value.security_group_ids, null)
+
+      protocol_state_filtering_mode = try(each.value.protocol_state_filtering_mode, null)
+
+      dynamic "primary_ip" {
+        for_each = try(each.value.primary_ip, null) != null && try(each.value.vni_id, null) == null ? [1] : []
+        content {
+          reserved_ip = try(each.value.primary_ip.reserved_ip, null)
+          auto_delete = try(each.value.primary_ip.auto_delete, null)
+          address     = try(each.value.primary_ip.address, null)
+          name        = try(each.value.primary_ip.name, null)
+        }
       }
     }
   }

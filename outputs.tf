@@ -1,5 +1,5 @@
 output "file_share" {
-  description = "File share details."
+  description = "Details for the file storage instance created along with the replica (if created)."
   value = {
     primary = {
       id                               = ibm_is_share.share.id
@@ -27,7 +27,7 @@ output "file_share" {
 }
 
 output "mount_targets" {
-  description = "Mount target details."
+  description = "Mount targets that were created and attached to this file storage instance."
   value = {
     vpc_targets = [
       for mt in values(ibm_is_share_mount_target.mount_targets) : {
@@ -36,7 +36,7 @@ output "mount_targets" {
         share      = mt.share
         vpc        = mt.vpc
         mount_path = mt.mount_path
-      } if mt.vpc != null
+      } if length(try(mt.virtual_network_interface, [])) == 0
     ]
 
     security_group_targets = [
@@ -47,13 +47,16 @@ output "mount_targets" {
         transit_encryption = mt.transit_encryption
         mount_path         = mt.mount_path
         vni = {
-          name            = mt.virtual_network_interface[0].name
-          subnet_id       = mt.virtual_network_interface[0].subnet
-          resource_group  = mt.virtual_network_interface[0].resource_group
-          security_groups = mt.virtual_network_interface[0].security_groups
-          primary_ip_name = mt.virtual_network_interface[0].primary_ip[0].name
+          id              = try(mt.virtual_network_interface[0].id, null)
+          name            = try(mt.virtual_network_interface[0].name, null)
+          subnet_id       = try(mt.virtual_network_interface[0].subnet, null)
+          resource_group  = try(mt.virtual_network_interface[0].resource_group, null)
+          security_groups = try(mt.virtual_network_interface[0].security_groups, null)
+          primary_ip_name = try(mt.virtual_network_interface[0].primary_ip[0].name, null)
+          reserved_ip     = try(mt.virtual_network_interface[0].primary_ip[0].reserved_ip, null)
+          address         = try(mt.virtual_network_interface[0].primary_ip[0].address, null)
         }
-      } if mt.vpc == null
+      } if length(try(mt.virtual_network_interface, [])) > 0
     ]
   }
 }

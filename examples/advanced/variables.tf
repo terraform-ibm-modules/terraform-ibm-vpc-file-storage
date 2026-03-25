@@ -74,7 +74,7 @@ variable "name" {
 }
 
 variable "zone" {
-  description = "Region where VPC will be created. To find your VPC region, use `ibmcloud is regions` command to find available regions."
+  description = "Zone where the file share will be created, use `ibmcloud is zones` command in the target region to find zones available for each region."
   type        = string
   default     = "us-south-1"
 }

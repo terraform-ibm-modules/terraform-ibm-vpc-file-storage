@@ -26,7 +26,7 @@ resource "tls_private_key" "tls_key" {
 }
 
 resource "ibm_is_ssh_key" "ssh_key" {
-  name       = "${local.prefix}-ssh-key"
+  name       = "${local.prefix}ssh-key"
   public_key = resource.tls_private_key.tls_key.public_key_openssh
 }
 
@@ -221,7 +221,7 @@ module "vsi" {
 
 module "file_storage" {
   source            = "../../"
-  name              = "${local.prefix}-${var.name}"
+  name              = "${local.prefix}${var.name}"
   resource_group_id = module.resource_group.resource_group_id
   size              = 10
   iops              = 100
@@ -264,6 +264,6 @@ resource "ibm_is_share" "cross_regional_replica" {
   source_share_crn      = module.file_storage.file_share.primary.crn
   encryption_key        = module.file_storage.file_share.primary.encryption_key
   replication_cron_spec = var.replica_cron_spec
-  name                  = "${local.prefix}-${var.replica_name}"
+  name                  = "${local.prefix}${var.replica_name}"
   profile               = module.file_storage.file_share.primary.profile
 }
