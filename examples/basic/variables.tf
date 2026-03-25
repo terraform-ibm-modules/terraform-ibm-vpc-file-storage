@@ -31,25 +31,21 @@ variable "zone" {
 }
 
 variable "name" {
-  description = "Base name for the file share"
+  description = "The unique name for this file storage for vpc instance."
   type        = string
   default     = "fs"
 }
 
-variable "replica_name" {
-  description = "Replica share name"
-  type        = string
-  default     = "rep1"
-}
-
-variable "replica_zone" {
-  description = "Replica zone"
-  type        = string
-  default     = "us-south-2"
-}
-
-variable "replica_cron_spec" {
-  description = "Replica schedule cron spec"
-  type        = string
-  default     = "0 */5 * * *"
+variable "replica" {
+  description = "Optional replica share configuration. If null, no replica is created. Note: this can create replica only in anotheravailability zone of the same region as this File Storage instance"
+  type = object({
+    name      = string
+    zone      = string
+    cron_spec = string
+  })
+  default = {
+    name      = "rep1"
+    zone      = "us-south-2"
+    cron_spec = "0 */5 * * *"
+  }
 }

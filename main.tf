@@ -1,30 +1,29 @@
 locals {
-  restoring_from_snapshot = var.enable_snapshot_restore
-  create_accessor_share   = var.origin_share_crn != null
-  replica_enabled = (
-    !local.restoring_from_snapshot &&
-    var.replica_name != null &&
-    var.replica_zone != null &&
-    var.replica_cron_spec != null
-  )
-  create_file_share = var.name != null && !local.restoring_from_snapshot && !local.create_accessor_share ? 1 : 0
+  is_replica_enabled = (local.is_standard && var.replica != null)
+  is_snapshot        = var.create_share.mode == "snapshot"
+  is_accessor        = var.create_share.mode == "accessor"
+  is_standard        = var.create_share.mode == "standard"
 }
 ##############################################################################
 # Create File Share
 ##############################################################################
+
 resource "ibm_is_share" "share" {
-  count                            = local.create_file_share
-  name                             = var.name
-  allowed_transit_encryption_modes = length(var.sg_mount_targets) > 0 ? ["ipsec", "none"] : null
-  resource_group                   = var.resource_group_id
-  access_control_mode              = length(var.sg_mount_targets) > 0 ? "security_group" : "vpc"
-  profile                          = var.profile
-  size                             = var.size
-  iops                             = var.iops
-  zone                             = var.zone
-  encryption_key                   = var.kms_encryption_enabled ? var.encryption_key_crn : null
-  tags                             = var.tags
-  access_tags                      = var.access_tags
+  # One “main” share always created
+  name           = var.name
+  profile        = var.profile
+  size           = var.size
+  iops           = var.iops
+  resource_group = var.resource_group_id
+  zone           = local.is_standard ? var.zone : null
+
+  encryption_key = var.kms_encryption_enabled ? var.encryption_key_crn : null
+  tags           = var.tags
+  access_tags    = var.access_tags
+
+  allowed_transit_encryption_modes = local.is_standard && length(var.sg_mount_targets) > 0 ? ["ipsec", "none"] : null
+  access_control_mode              = local.is_standard ? (length(var.sg_mount_targets) > 0 ? "security_group" : "vpc") : null
+
   dynamic "initial_owner" {
     for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) ? [1] : []
     content {
@@ -32,39 +31,33 @@ resource "ibm_is_share" "share" {
       gid = var.initial_owner_gid
     }
   }
+
+  dynamic "source_snapshot" {
+    for_each = local.is_snapshot ? [var.create_share.source_snapshot] : []
+    content {
+      crn = try(source_snapshot.value.crn, null)
+      id  = try(source_snapshot.value.id, null)
+    }
+  }
+
+  dynamic "origin_share" {
+    for_each = local.is_accessor ? [1] : []
+    content {
+      crn = var.create_share.origin_share_crn
+    }
+  }
+
 }
+
+
 #create replica
 resource "ibm_is_share" "replica" {
-  count                 = local.replica_enabled && local.create_file_share == 1 ? 1 : 0
-  zone                  = var.replica_zone
-  source_share          = ibm_is_share.share[0].id
-  name                  = var.replica_name
+  count                 = local.is_replica_enabled ? 1 : 0
+  zone                  = var.replica.zone
+  source_share          = ibm_is_share.share.id
+  name                  = var.replica.name
   profile               = var.profile
-  replication_cron_spec = var.replica_cron_spec
-}
-
-#restore from snapshot
-resource "ibm_is_share" "snapshot_restore" {
-  count          = var.enable_snapshot_restore ? 1 : 0
-  name           = var.name
-  profile        = var.profile
-  size           = var.size
-  encryption_key = var.kms_encryption_enabled ? var.encryption_key_crn : null
-  source_snapshot {
-    crn = var.source_snapshot_crn
-  }
-
-}
-##############################################################################
-# Accessor share
-##############################################################################
-
-resource "ibm_is_share" "accessor" {
-  count = local.create_accessor_share ? 1 : 0
-  name  = var.name
-  origin_share {
-    crn = var.origin_share_crn
-  }
+  replication_cron_spec = var.replica.cron_spec
 }
 
 ########################################################################################################################
@@ -82,7 +75,7 @@ locals {
   kms_service_name   = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].service_name
   kms_account_id     = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].account_id
   kms_key_id         = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].resource
-  create_auth_policy = var.kms_encryption_enabled == false || var.skip_iam_share_authorization_policy
+  create_auth_policy = !var.kms_encryption_enabled || var.skip_iam_share_authorization_policy
 }
 
 resource "ibm_iam_authorization_policy" "file_share_policy" {
@@ -132,36 +125,48 @@ resource "time_sleep" "wait_for_authorization_policy" {
 # Create Mount Targets For File Share
 ##############################################################################
 locals {
-  create_mount_target   = local.create_file_share == 1 || local.create_accessor_share
-  mount_target_share_id = try(ibm_is_share.share[0].id, ibm_is_share.accessor[0].id, null)
-}
-
-resource "ibm_is_share_mount_target" "share_target_vpc" {
-  for_each = local.create_mount_target ? {
-    for idx, vpc in var.vpc_mount_targets : idx => vpc
-  } : {}
-
-  share = local.mount_target_share_id
-  name  = format("%s-mount-target-%d", var.name, each.key)
-  vpc   = each.value
-}
-
-resource "ibm_is_share_mount_target" "share_target_sg" {
-  for_each = local.create_mount_target ? {
-    for idx, mt in var.sg_mount_targets : idx => mt
-  } : {}
-
-  share              = local.mount_target_share_id
-  name               = format("%s-mount-target-%d", var.name, each.key)
-  transit_encryption = each.value.transit_encryption
-
-  virtual_network_interface {
-    primary_ip {
-      name = format("%s-fs-pip-%d", var.name, each.key)
+  create_mount_targets = local.is_standard || local.is_accessor
+  mount_targets = local.create_mount_targets ? merge(
+    {
+      for idx, vpc_id in var.vpc_mount_targets :
+      "vpc-${idx}" => {
+        type   = "vpc"
+        vpc_id = vpc_id
+      }
+    },
+    {
+      for idx, mt in var.sg_mount_targets :
+      "sg-${idx}" => {
+        type               = "sg"
+        subnet_id          = mt.subnet_id
+        security_group_ids = mt.security_group_ids
+        transit_encryption = try(mt.transit_encryption, "none")
+      }
     }
-    subnet          = each.value.subnet_id
-    name            = format("%s-fs-vni-%d", var.name, each.key)
-    resource_group  = var.resource_group_id
-    security_groups = each.value.security_group_ids
+  ) : {}
+}
+
+resource "ibm_is_share_mount_target" "mount_targets" {
+  for_each = local.mount_targets
+
+  share = ibm_is_share.share.id
+  name  = format("%s-mount-target-%s", var.name, each.key)
+
+  vpc = each.value.type == "vpc" ? each.value.vpc_id : null
+
+  transit_encryption = each.value.type == "sg" ? each.value.transit_encryption : null
+
+  dynamic "virtual_network_interface" {
+    for_each = each.value.type == "sg" ? [1] : []
+    content {
+      name            = format("%s-fs-vni-%s", var.name, each.key)
+      subnet          = each.value.subnet_id
+      resource_group  = var.resource_group_id
+      security_groups = each.value.security_group_ids
+
+      primary_ip {
+        name = format("%s-fs-pip-%s", var.name, each.key)
+      }
+    }
   }
 }

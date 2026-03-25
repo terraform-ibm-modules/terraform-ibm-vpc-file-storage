@@ -4,11 +4,12 @@
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
-  version = "1.4.8"
+  version = "1.5.0"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
 }
+
 locals {
   prefix = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
 }
@@ -147,7 +148,5 @@ module "file_storage" {
   iops              = 100
   zone              = var.zone
   vpc_mount_targets = [module.vpc.vpc_id]
-  replica_name      = var.replica_name
-  replica_cron_spec = var.replica_cron_spec
-  replica_zone      = var.replica_zone
+  replica           = var.replica
 }

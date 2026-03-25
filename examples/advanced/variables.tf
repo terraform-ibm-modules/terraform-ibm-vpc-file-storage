@@ -68,7 +68,7 @@ EOT
 }
 
 variable "name" {
-  description = "Base name for the file share"
+  description = "The unique name for this file storage for vpc instance."
   type        = string
   default     = "fs"
 }

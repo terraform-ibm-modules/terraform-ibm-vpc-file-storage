@@ -81,7 +81,7 @@ You need the following permissions to run this module.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
-| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.80.0, < 2.0.0 |
+| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.88.0, < 2.0.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1, < 1.0.0 |
 
 ### Modules
@@ -95,48 +95,41 @@ You need the following permissions to run this module.
 | Name | Type |
 |------|------|
 | [ibm_iam_authorization_policy.file_share_policy](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/iam_authorization_policy) | resource |
-| [ibm_is_share.accessor](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_share) | resource |
 | [ibm_is_share.replica](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_share) | resource |
 | [ibm_is_share.share](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_share) | resource |
-| [ibm_is_share.snapshot_restore](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_share) | resource |
-| [ibm_is_share_mount_target.share_target_sg](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_share_mount_target) | resource |
-| [ibm_is_share_mount_target.share_target_vpc](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_share_mount_target) | resource |
+| [ibm_is_share_mount_target.mount_targets](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_share_mount_target) | resource |
 | [time_sleep.wait_for_authorization_policy](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 
 ### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Filse Storage resources created by the module. For more information, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial. | `list(string)` | `[]` | no |
-| <a name="input_enable_snapshot_restore"></a> [enable\_snapshot\_restore](#input\_enable\_snapshot\_restore) | Set to true if restoring from a snapshot | `bool` | `false` | no |
+| <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial) | `list(string)` | `[]` | no |
+| <a name="input_create_share"></a> [create\_share](#input\_create\_share) | Defines how the VPC file share is created. Exactly one mode must be selected:<br/>- standard: create a new empty share in a zone<br/>- snapshot: create a share cloned from a snapshot<br/>- accessor: create an accessor share from an origin share CRN | <pre>object({<br/>    mode = string # "standard" | "snapshot" | "accessor"<br/><br/><br/>    # snapshot mode<br/>    source_snapshot = optional(object({<br/>      crn = optional(string)<br/>      id  = optional(string)<br/>    }))<br/><br/>    # accessor mode<br/>    origin_share_crn = optional(string)<br/>  })</pre> | <pre>{<br/>  "mode": "standard"<br/>}</pre> | no |
 | <a name="input_encryption_key_crn"></a> [encryption\_key\_crn](#input\_encryption\_key\_crn) | Encryption key CRN for file share encryption | `string` | `null` | no |
-| <a name="input_initial_owner_gid"></a> [initial\_owner\_gid](#input\_initial\_owner\_gid) | GID for the root of the file share. Use >= 100 (preferably >= 10000) to avoid reserved ranges. | `number` | `10000` | no |
-| <a name="input_initial_owner_uid"></a> [initial\_owner\_uid](#input\_initial\_owner\_uid) | UID for the root of the file share. Use >= 10000 to avoid reserved ranges. | `number` | `10000` | no |
-| <a name="input_iops"></a> [iops](#input\_iops) | The maximum input/output operation performance bandwidth per second for the file share. | `number` | `null` | no |
+| <a name="input_initial_owner_gid"></a> [initial\_owner\_gid](#input\_initial\_owner\_gid) | GID for the root of the file share. | `number` | `10000` | no |
+| <a name="input_initial_owner_uid"></a> [initial\_owner\_uid](#input\_initial\_owner\_uid) | UID for the root of the file share. | `number` | `10000` | no |
+| <a name="input_iops"></a> [iops](#input\_iops) | The maximum input/output operation performance bandwidth per second for the file share. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview) | `number` | `100` | no |
 | <a name="input_kms_encryption_enabled"></a> [kms\_encryption\_enabled](#input\_kms\_encryption\_enabled) | Enable Key management , if set to `false` IBM-managed keys are used by default | `bool` | `false` | no |
-| <a name="input_name"></a> [name](#input\_name) | Base name for the file share | `string` | `null` | no |
-| <a name="input_origin_share_crn"></a> [origin\_share\_crn](#input\_origin\_share\_crn) | CRN of origin file share. Required when creating cross account accessor Share | `string` | `null` | no |
+| <a name="input_name"></a> [name](#input\_name) | The unique name for this file storage for vpc instance. | `string` | `"fs"` | no |
 | <a name="input_profile"></a> [profile](#input\_profile) | File storage profiles | `string` | `"dp2"` | no |
-| <a name="input_replica_cron_spec"></a> [replica\_cron\_spec](#input\_replica\_cron\_spec) | Replica schedule cron spec | `string` | `null` | no |
-| <a name="input_replica_name"></a> [replica\_name](#input\_replica\_name) | Replica share name | `string` | `null` | no |
-| <a name="input_replica_zone"></a> [replica\_zone](#input\_replica\_zone) | Replica zone | `string` | `null` | no |
+| <a name="input_replica"></a> [replica](#input\_replica) | Optional replica share configuration. If null, no replica is created. Note: this can create replica only in anotheravailability zone of the same region as this File Storage instance | <pre>object({<br/>    name      = string<br/>    zone      = string<br/>    cron_spec = string<br/>  })</pre> | `null` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | ID of resource group to provision file storage. | `string` | `null` | no |
 | <a name="input_sg_mount_targets"></a> [sg\_mount\_targets](#input\_sg\_mount\_targets) | Security-group based mount targets . If set the file storage is created with Security Group access mode | <pre>list(object({<br/>    subnet_id          = string<br/>    security_group_ids = list(string)<br/>    transit_encryption = optional(string, "none")<br/>  }))</pre> | `[]` | no |
-| <a name="input_size"></a> [size](#input\_size) | Size in GB. The size of the file share | `number` | `null` | no |
+| <a name="input_size"></a> [size](#input\_size) | File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview) | `number` | `10` | no |
 | <a name="input_skip_iam_share_authorization_policy"></a> [skip\_iam\_share\_authorization\_policy](#input\_skip\_iam\_share\_authorization\_policy) | When using an existing KMS instance name, set this value to true if authorization is already enabled between KMS instance and the VPC file share. Otherwise, default is set to false. Ensuring proper authorization avoids access issues during deployment.For more information on how to create authorization policy manually, see [creating authorization policies for VPC file share](https://cloud.ibm.com/docs/vpc?topic=vpc-file-s2s-auth&interface=ui). | `bool` | `false` | no |
-| <a name="input_source_snapshot_crn"></a> [source\_snapshot\_crn](#input\_source\_snapshot\_crn) | If set, create the share by restoring from this snapshot CRN. | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | List of tags to apply to resources created by this module. | `list(string)` | `[]` | no |
 | <a name="input_vpc_mount_targets"></a> [vpc\_mount\_targets](#input\_vpc\_mount\_targets) | List of VPC IDs to mount file share . If set the file storage is created with VPC access mode | `list(string)` | `[]` | no |
-| <a name="input_zone"></a> [zone](#input\_zone) | Region where VPC will be created. To find your VPC region, use `ibmcloud is regions` command to find available regions. | `string` | `null` | no |
+| <a name="input_zone"></a> [zone](#input\_zone) | Zone where the file share will be created, use `ibmcloud is zones` command in the target region to find zones available for each region. | `string` | `"us-south"` | no |
 
 ### Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_accessor_share"></a> [accessor\_share](#output\_accessor\_share) | Accessor share details. |
+| <a name="output_accessor_share"></a> [accessor\_share](#output\_accessor\_share) | Accessor share details (populated only when create\_share.mode == "accessor"). |
 | <a name="output_file_share"></a> [file\_share](#output\_file\_share) | File share details. |
 | <a name="output_mount_targets"></a> [mount\_targets](#output\_mount\_targets) | Mount target details. |
-| <a name="output_snapshot_restore"></a> [snapshot\_restore](#output\_snapshot\_restore) | Snapshot restore share details |
+| <a name="output_snapshot_restore"></a> [snapshot\_restore](#output\_snapshot\_restore) | Snapshot restore share details (populated only when create\_share.mode == "snapshot"). |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Known issues

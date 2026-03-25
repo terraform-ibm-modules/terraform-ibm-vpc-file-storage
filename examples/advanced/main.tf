@@ -3,12 +3,14 @@
 #######################################################################################################################
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
-  version                      = "1.4.8"
+  version                      = "1.5.0"
   existing_resource_group_name = var.resource_group
 }
+
 data "ibm_iam_account_settings" "origin" {
   provider = ibm
 }
+
 locals {
   ssh_key_id = resource.ibm_is_ssh_key.ssh_key.id
   prefix     = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
