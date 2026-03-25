@@ -36,7 +36,7 @@ output "mount_targets" {
         share      = mt.share
         vpc        = mt.vpc
         mount_path = mt.mount_path
-      } if length(try(mt.virtual_network_interface, [])) == 0
+      } if length(coalesce(mt.virtual_network_interface, [])) == 0
     ]
 
     security_group_targets = [
@@ -56,7 +56,7 @@ output "mount_targets" {
           reserved_ip     = try(mt.virtual_network_interface[0].primary_ip[0].reserved_ip, null)
           address         = try(mt.virtual_network_interface[0].primary_ip[0].address, null)
         }
-      } if length(try(mt.virtual_network_interface, [])) > 0
+      } if length(coalesce(mt.virtual_network_interface, [])) > 0
     ]
   }
 }
