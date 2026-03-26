@@ -14,45 +14,28 @@ data "ibm_iam_account_settings" "origin" {
 locals {
   ssh_key_id = resource.ibm_is_ssh_key.ssh_key.id
   prefix     = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
-}
+  user_data  = <<-EOT
+    #!/bin/bash
+    set -e
 
-##############################################################################
-# Create new SSH key
-##############################################################################
+    cat > /etc/profile.d/welcome.sh << 'EOF'
+    #!/bin/bash
+    set -e
 
-resource "tls_private_key" "tls_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
+    if [ -t 0 ] && [ "$PS1" ]; then
+        echo "=========================================="
+        echo "Welcome to Your IBM Cloud VSI!"
+        echo "=========================================="
+        echo "Server Information:"
+        echo "- Hostname: $(hostname)"
+        echo "- IP Address: $(hostname -I | awk '{print $1}')"
+        echo "- OS: $(if [ -f /etc/os-release ]; then grep PRETTY_NAME /etc/os-release | cut -d'"' -f2; elif [ -f /etc/redhat-release ]; then cat /etc/redhat-release; else uname -s; fi)"
+        echo ""
+    fi
+    EOF
 
-resource "ibm_is_ssh_key" "ssh_key" {
-  name       = "${local.prefix}ssh-key"
-  public_key = resource.tls_private_key.tls_key.public_key_openssh
-}
-
-
-#############################################################################
-# Provision VPC
-#############################################################################
-
-module "vpc" {
-  source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
-  version           = "8.15.10"
-  resource_group_id = module.resource_group.resource_group_id
-  region            = var.region
-  prefix            = local.prefix != "" ? trimspace(var.prefix) : null
-  tags              = var.resource_tags
-  subnets = {
-    zone-1 = [
-      {
-        name           = "subnet-a"
-        cidr           = "10.10.10.0/24"
-        public_gateway = true
-        acl_name       = "vpc-acl"
-        no_addr_prefix = false
-      }
-  ] }
-  name = "vpc"
+    chmod +x /etc/profile.d/welcome.sh
+  EOT
   network_acls = [
     {
       name                         = "vpc-acl"
@@ -129,32 +112,6 @@ module "vpc" {
       ]
     }
   ]
-}
-
-########################################################################################################################
-# Virtual Server Instance
-########################################################################################################################
-
-data "ibm_is_image" "image" {
-  name = "ibm-ubuntu-24-04-3-minimal-amd64-5"
-}
-
-module "vsi" {
-  source                = "terraform-ibm-modules/landing-zone-vsi/ibm"
-  version               = "6.2.7"
-  resource_group_id     = module.resource_group.resource_group_id
-  image_id              = data.ibm_is_image.image.id
-  tags                  = var.resource_tags
-  access_tags           = var.access_tags
-  subnets               = module.vpc.subnet_zone_list
-  vpc_id                = module.vpc.vpc_id
-  prefix                = "${local.prefix}-vsi"
-  machine_type          = "bx2d-2x8"
-  user_data             = var.user_data
-  vsi_per_subnet        = 1
-  ssh_key_ids           = [local.ssh_key_id]
-  enable_floating_ip    = true
-  create_security_group = true
   security_group = {
     name = "ssh-security-group"
     rules = [
@@ -215,17 +172,92 @@ module "vsi" {
     ]
   }
 }
+
+##############################################################################
+# Create new SSH key
+##############################################################################
+
+resource "tls_private_key" "tls_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "ibm_is_ssh_key" "ssh_key" {
+  name       = "${local.prefix}ssh-key"
+  public_key = resource.tls_private_key.tls_key.public_key_openssh
+}
+
+
+#############################################################################
+# Provision VPC
+#############################################################################
+
+module "vpc" {
+  source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
+  version           = "8.15.10"
+  resource_group_id = module.resource_group.resource_group_id
+  region            = var.region
+  prefix            = local.prefix != "" ? trimspace(var.prefix) : null
+  tags              = var.resource_tags
+  subnets = {
+    zone-1 = [
+      {
+        name           = "subnet-a"
+        cidr           = "10.10.10.0/24"
+        public_gateway = true
+        acl_name       = "vpc-acl"
+        no_addr_prefix = false
+      }
+  ] }
+  name         = "vpc"
+  network_acls = local.network_acls
+}
+
+#############################################################################
+# VSI Image lookup
+#############################################################################
+
+module "vsi_image_selector" {
+  source           = "terraform-ibm-modules/common-utilities/ibm//modules/vsi-image-selector"
+  version          = "1.4.2"
+  architecture     = "amd64"
+  operating_system = "ubuntu"
+}
+
+########################################################################################################################
+# Virtual Server Instance
+########################################################################################################################
+
+
+module "vsi" {
+  source                = "terraform-ibm-modules/landing-zone-vsi/ibm"
+  version               = "6.2.7"
+  resource_group_id     = module.resource_group.resource_group_id
+  image_id              = module.vsi_image_selector.latest_image_id
+  tags                  = var.resource_tags
+  access_tags           = var.access_tags
+  subnets               = module.vpc.subnet_zone_list
+  vpc_id                = module.vpc.vpc_id
+  prefix                = "${local.prefix}-vsi"
+  machine_type          = "bx2d-2x8"
+  user_data             = local.user_data
+  vsi_per_subnet        = 1
+  ssh_key_ids           = [local.ssh_key_id]
+  enable_floating_ip    = true
+  create_security_group = true
+  security_group        = local.security_group
+}
 #############################################################################
 # Create File Storage with Security Group Access control mode
 #############################################################################
 
 module "file_storage" {
   source            = "../../"
-  name              = "${local.prefix}${var.name}"
+  name              = "${local.prefix}adv-share"
   resource_group_id = module.resource_group.resource_group_id
   size              = 10
   iops              = 100
-  zone              = var.zone
+  zone              = "us-south-1"
   sg_mount_targets = [{
     security_group_ids = [module.vsi.vsi_security_group.id]
     subnet_id          = module.vpc.subnet_ids[0]
@@ -249,7 +281,7 @@ resource "ibm_iam_authorization_policy" "cross_regional_replica_policy" {
   resource_attributes {
     name     = "shareId"
     operator = "stringEquals"
-    value    = module.file_storage.file_share.primary.id
+    value    = module.file_storage.file_share.id
   }
 }
 resource "time_sleep" "wait_for_authorization_policy" {
@@ -257,13 +289,19 @@ resource "time_sleep" "wait_for_authorization_policy" {
   create_duration = "30s"
 }
 
-resource "ibm_is_share" "cross_regional_replica" {
-  provider              = ibm.replica
-  zone                  = var.replica_zone
-  depends_on            = [time_sleep.wait_for_authorization_policy]
-  source_share_crn      = module.file_storage.file_share.primary.crn
-  encryption_key        = module.file_storage.file_share.primary.encryption_key
-  replication_cron_spec = var.replica_cron_spec
-  name                  = "${local.prefix}${var.replica_name}"
-  profile               = module.file_storage.file_share.primary.profile
+module "cross_regional_replica" {
+  providers = {
+    ibm = ibm.replica
+  }
+  source     = "../../"
+  profile    = module.file_storage.file_share.profile
+  depends_on = [time_sleep.wait_for_authorization_policy]
+  name       = "${local.prefix}replica"
+  zone       = "us-east-1"
+  create_share = {
+    mode = "replica",
+    replica = {
+      source_share_crn = module.file_storage.file_share.crn # for cross-regional replica only source_share_crn must be passed
+      cron_spec        = "0 */5 * * *"
+  } }
 }

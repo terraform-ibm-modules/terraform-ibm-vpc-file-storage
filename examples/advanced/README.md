@@ -12,8 +12,8 @@ An end-to-end advance example that will provision the following:
 - A new resource group if one is not passed in.
 - A new VPC with 1 subnet
 - A VSI instance in the subnet with required Security Group attached to it
-- A File Storage instance with Security Group access control mode
-- A Cross Regional Replica of the File Storage instance
+- A file Storage instance with Security Group access control mode
+- A cross Regional Replica of the File Storage instance
 
 <!-- BEGIN SCHEMATICS DEPLOY TIP HOOK -->
 :information_source: Ctrl/Cmd+Click or right-click on the Schematics deploy button to open in a new tab

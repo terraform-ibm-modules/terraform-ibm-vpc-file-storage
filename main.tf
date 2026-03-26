@@ -1,20 +1,21 @@
 locals {
-  is_replica_enabled = (local.is_standard && var.replica != null)
-  is_snapshot        = var.create_share.mode == "snapshot"
-  is_accessor        = var.create_share.mode == "accessor"
-  is_standard        = var.create_share.mode == "standard"
+  is_snapshot_restore = var.create_share.mode == "snapshot_restore"
+  is_accessor         = var.create_share.mode == "accessor"
+  is_standard         = var.create_share.mode == "standard"
+  is_replica          = var.create_share.mode == "replica"
 }
 ##############################################################################
 # Create File Share
 ##############################################################################
 
 resource "ibm_is_share" "share" {
+  depends_on     = [time_sleep.wait_for_authorization_policy]
   name           = var.name
   profile        = !local.is_accessor ? var.profile : null
-  size           = !local.is_accessor ? var.size : null
-  iops           = !local.is_accessor ? var.iops : null
+  size           = !local.is_accessor && !local.is_replica ? var.size : null
+  iops           = !local.is_accessor && !local.is_replica ? var.iops : null
   resource_group = var.resource_group_id
-  zone           = local.is_standard ? var.zone : null
+  zone           = local.is_standard || local.is_replica ? var.zone : null
 
   encryption_key = var.kms_encryption_enabled ? var.encryption_key_crn : null
   tags           = var.tags
@@ -22,9 +23,9 @@ resource "ibm_is_share" "share" {
 
   allowed_transit_encryption_modes = local.is_standard && length(var.sg_mount_targets) > 0 ? ["ipsec", "none"] : null
   access_control_mode              = local.is_standard ? (length(var.sg_mount_targets) > 0 ? "security_group" : "vpc") : null
-  allowed_access_protocols         = !local.is_accessor ? ["nfs4"] : null
+  allowed_access_protocols         = !local.is_accessor && !local.is_replica ? ["nfs4"] : null
   dynamic "initial_owner" {
-    for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) && !local.is_accessor ? [1] : []
+    for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) && !local.is_accessor && !local.is_replica ? [1] : []
     content {
       uid = var.initial_owner_uid
       gid = var.initial_owner_gid
@@ -32,7 +33,7 @@ resource "ibm_is_share" "share" {
   }
 
   dynamic "source_snapshot" {
-    for_each = local.is_snapshot ? [var.create_share.source_snapshot] : []
+    for_each = local.is_snapshot_restore ? [var.create_share.source_snapshot] : []
     content {
       crn = try(source_snapshot.value.crn, null)
       id  = try(source_snapshot.value.id, null)
@@ -47,18 +48,14 @@ resource "ibm_is_share" "share" {
     }
   }
 
+  source_share          = local.is_replica ? var.create_share.replica.source_share_id : null
+  source_share_crn      = local.is_replica ? var.create_share.replica.source_share_crn : null
+  replication_cron_spec = local.is_replica ? var.create_share.replica.cron_spec : null
+
+
 }
 
 
-#create replica
-resource "ibm_is_share" "replica" {
-  count                 = local.is_replica_enabled ? 1 : 0
-  zone                  = var.replica.zone
-  source_share          = ibm_is_share.share.id
-  name                  = var.replica.name
-  profile               = var.profile
-  replication_cron_spec = var.replica.cron_spec
-}
 
 ########################################################################################################################
 # KMS IAM Authorization Policies

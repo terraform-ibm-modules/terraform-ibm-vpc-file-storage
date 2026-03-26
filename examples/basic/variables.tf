@@ -23,29 +23,3 @@ variable "resource_tags" {
   type        = list(string)
   default     = null
 }
-
-variable "zone" {
-  description = "Zone where the file share will be created, use `ibmcloud is zones` command in the target region to find zones available for each region."
-  type        = string
-  default     = "us-south-1"
-}
-
-variable "name" {
-  description = "The unique name for this file storage for vpc instance."
-  type        = string
-  default     = "fs"
-}
-
-variable "replica" {
-  description = "Optional replica share configuration. If null, no replica is created. Note: this can create replica only in anotheravailability zone of the same region as this File Storage instance"
-  type = object({
-    name      = string
-    zone      = string
-    cron_spec = string
-  })
-  default = {
-    name      = "rep1"
-    zone      = "us-south-2"
-    cron_spec = "0 */5 * * *"
-  }
-}

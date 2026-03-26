@@ -9,15 +9,7 @@ output "mount_targets" {
 }
 
 output "cross_regional_replica" {
-  value = {
-    id                    = ibm_is_share.cross_regional_replica.id
-    crn                   = ibm_is_share.cross_regional_replica.crn
-    name                  = ibm_is_share.cross_regional_replica.name
-    zone                  = ibm_is_share.cross_regional_replica.zone
-    profile               = ibm_is_share.cross_regional_replica.profile
-    replication_cron_spec = ibm_is_share.cross_regional_replica.replication_cron_spec
-    source_share          = ibm_is_share.cross_regional_replica.source_share
-  }
+  value       = module.cross_regional_replica.replica
   description = "Cross Regional Replica details"
 }
 
@@ -29,11 +21,6 @@ output "vsi_security_group" {
 output "vsi_data" {
   description = "A list of VSI with name, id, zone, and primary ipv4 address."
   value       = module.vsi.list
-}
-
-output "fip_list" {
-  description = "A list of VSI with name, id, zone, and primary ipv4 address, and floating IP. This list only contains instances with a floating IP attached."
-  value       = length(module.vsi.fip_list) > 0 ? module.vsi.fip_list : null
 }
 
 ##############################################################################

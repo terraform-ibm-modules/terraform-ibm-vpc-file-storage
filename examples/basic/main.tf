@@ -12,30 +12,6 @@ module "resource_group" {
 
 locals {
   prefix = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
-}
-
-#############################################################################
-# Provision VPC
-#############################################################################
-
-module "vpc" {
-  source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
-  version           = "8.15.10"
-  resource_group_id = module.resource_group.resource_group_id
-  region            = var.region
-  prefix            = var.prefix
-  tags              = var.resource_tags
-  name              = format("%s-vpc", var.name)
-  subnets = {
-    zone-1 = [
-      {
-        name           = "subnet-a"
-        cidr           = "10.10.10.0/24"
-        public_gateway = true
-        acl_name       = "vpc-acl"
-        no_addr_prefix = false
-      }
-  ] }
   network_acls = [
     {
       name                         = "vpc-acl"
@@ -137,16 +113,52 @@ module "vpc" {
 }
 
 #############################################################################
+# Provision VPC
+#############################################################################
+
+module "vpc" {
+  source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
+  version           = "8.15.10"
+  resource_group_id = module.resource_group.resource_group_id
+  region            = var.region
+  prefix            = local.prefix != "" ? trimspace(var.prefix) : null
+  tags              = var.resource_tags
+  name              = "vpc"
+  subnets = {
+    zone-1 = [
+      {
+        name           = "subnet-a"
+        cidr           = "10.10.10.0/24"
+        public_gateway = true
+        acl_name       = "vpc-acl"
+        no_addr_prefix = false
+      }
+  ] }
+  network_acls = local.network_acls
+}
+
+#############################################################################
 # Create File Storage with VPC Access control mode
 #############################################################################
 
 module "file_storage" {
   source            = "../../"
-  name              = "${local.prefix}-${var.name}"
+  name              = "${local.prefix}basic-share"
   resource_group_id = module.resource_group.resource_group_id
   size              = 10
   iops              = 100
-  zone              = var.zone
+  zone              = "us-south-1"
   vpc_mount_targets = [module.vpc.vpc_id]
-  replica           = var.replica
+}
+
+module "replica" {
+  source = "../../"
+  name   = "${local.prefix}replica"
+  zone   = "us-south-2"
+  create_share = {
+    mode = "replica",
+    replica = {
+      source_share_id = module.file_storage.file_share.id
+      cron_spec       = "0 */5 * * *"
+  } }
 }
