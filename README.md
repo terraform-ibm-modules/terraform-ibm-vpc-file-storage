@@ -56,7 +56,7 @@ provider "ibm" {
 }
 
 module "file_storage" {
-  source            = "terraform-ibm-modulesterraform-ibm-vpc-file-storage/ibm"
+  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
   version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   name              = "file-storage-instance-name"
   resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX" # Replace with the actual ID of resource group to use

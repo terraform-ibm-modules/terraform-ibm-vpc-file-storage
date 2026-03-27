@@ -11,7 +11,7 @@ module "resource_group" {
 }
 
 locals {
-  prefix = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
+  prefix = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}" : "" : ""
   network_acls = [
     {
       name                         = "vpc-acl"
@@ -121,7 +121,7 @@ module "vpc" {
   version           = "8.15.10"
   resource_group_id = module.resource_group.resource_group_id
   region            = var.region
-  prefix            = local.prefix != "" ? trimspace(var.prefix) : null
+  prefix            = local.prefix
   tags              = var.resource_tags
   name              = "vpc"
   subnets = {
@@ -142,8 +142,11 @@ module "vpc" {
 #############################################################################
 
 module "file_storage" {
-  source            = "../../"
-  name              = "${local.prefix}basic-share"
+  source = "../../"
+  # remove the above line and uncomment the below 2 lines to consume the module from the registry
+  # source            = "terraform-ibm-modules/vpc-file-storage/ibm/"
+  # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name              = "${local.prefix}-basic-share"
   resource_group_id = module.resource_group.resource_group_id
   size              = 10
   iops              = 100
@@ -153,8 +156,11 @@ module "file_storage" {
 
 module "replica" {
   source = "../../"
-  name   = "${local.prefix}replica"
-  zone   = "us-south-2"
+  # remove the above line and uncomment the below 2 lines to consume the module from the registry
+  # source            = "terraform-ibm-modules/vpc-file-storage/ibm/"
+  # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name = "${local.prefix}-replica"
+  zone = "us-south-2"
   create_share = {
     mode = "replica",
     replica = {

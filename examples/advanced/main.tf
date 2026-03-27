@@ -2,8 +2,8 @@
 # Resource Group
 #######################################################################################################################
 module "resource_group" {
-  source                       = "terraform-ibm-modules/resource-group/ibm"
-  version                      = "1.5.0"
+  source  = "terraform-ibm-modules/resource-group/ibm"
+  version = "1.5.0"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -15,29 +15,7 @@ data "ibm_iam_account_settings" "origin" {
 
 locals {
   ssh_key_id = resource.ibm_is_ssh_key.ssh_key.id
-  prefix     = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
-  user_data  = <<-EOT
-    #!/bin/bash
-    set -e
-
-    cat > /etc/profile.d/welcome.sh << 'EOF'
-    #!/bin/bash
-    set -e
-
-    if [ -t 0 ] && [ "$PS1" ]; then
-        echo "=========================================="
-        echo "Welcome to Your IBM Cloud VSI!"
-        echo "=========================================="
-        echo "Server Information:"
-        echo "- Hostname: $(hostname)"
-        echo "- IP Address: $(hostname -I | awk '{print $1}')"
-        echo "- OS: $(if [ -f /etc/os-release ]; then grep PRETTY_NAME /etc/os-release | cut -d'"' -f2; elif [ -f /etc/redhat-release ]; then cat /etc/redhat-release; else uname -s; fi)"
-        echo ""
-    fi
-    EOF
-
-    chmod +x /etc/profile.d/welcome.sh
-  EOT
+  prefix     = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}" : "" : ""
   network_acls = [
     {
       name                         = "vpc-acl"
@@ -185,7 +163,7 @@ resource "tls_private_key" "tls_key" {
 }
 
 resource "ibm_is_ssh_key" "ssh_key" {
-  name       = "${local.prefix}ssh-key"
+  name       = "${local.prefix}-ssh-key"
   public_key = resource.tls_private_key.tls_key.public_key_openssh
 }
 
@@ -199,7 +177,7 @@ module "vpc" {
   version           = "8.15.10"
   resource_group_id = module.resource_group.resource_group_id
   region            = var.region
-  prefix            = local.prefix != "" ? trimspace(var.prefix) : null
+  prefix            = local.prefix
   tags              = var.resource_tags
   subnets = {
     zone-1 = [
@@ -230,7 +208,6 @@ module "vsi_image_selector" {
 # Virtual Server Instance
 ########################################################################################################################
 
-
 module "vsi" {
   source                = "terraform-ibm-modules/landing-zone-vsi/ibm"
   version               = "6.2.7"
@@ -242,7 +219,7 @@ module "vsi" {
   vpc_id                = module.vpc.vpc_id
   prefix                = "${local.prefix}-vsi"
   machine_type          = "bx2d-2x8"
-  user_data             = local.user_data
+  user_data             = null
   vsi_per_subnet        = 1
   ssh_key_ids           = [local.ssh_key_id]
   enable_floating_ip    = true
@@ -254,12 +231,15 @@ module "vsi" {
 #############################################################################
 
 module "file_storage" {
-  source            = "../../"
-  name              = "${local.prefix}adv-share"
+  source = "../../"
+  # remove the above line and uncomment the below 2 lines to consume the module from the registry
+  # source            = "terraform-ibm-modules/vpc-file-storage/ibm/"
+  # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name              = "${local.prefix}-adv-share"
   resource_group_id = module.resource_group.resource_group_id
   size              = 10
   iops              = 100
-  zone              = "us-south-1"
+  zone              = "${var.region}-1"
   sg_mount_targets = [{
     security_group_ids = [module.vsi.vsi_security_group.id]
     subnet_id          = module.vpc.subnet_ids[0]
@@ -295,10 +275,13 @@ module "cross_regional_replica" {
   providers = {
     ibm = ibm.replica
   }
-  source     = "../../"
+  source = "../../"
+  # remove the above line and uncomment the below 2 lines to consume the module from the registry
+  # source            = "terraform-ibm-modules/vpc-file-storage/ibm/"
+  # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   profile    = module.file_storage.file_share.profile
   depends_on = [time_sleep.wait_for_authorization_policy]
-  name       = "${local.prefix}replica"
+  name       = "${local.prefix}-replica"
   zone       = "us-east-1"
   create_share = {
     mode = "replica",

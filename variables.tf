@@ -159,7 +159,7 @@ variable "profile" {
 
   validation {
     condition     = var.profile == "dp2"
-    error_message = "Only \"dp2\" is supported by this module currently. Other profiles (for example \"rfs\") are intentionally not supported yet due to limited availability refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)."
+    error_message = "Only 'dp2' is supported by this module currently. Other profiles (for example 'rfs') are intentionally not supported yet due to limited availability refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)."
   }
 
 }

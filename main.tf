@@ -51,11 +51,7 @@ resource "ibm_is_share" "share" {
   source_share          = local.is_replica ? var.create_share.replica.source_share_id : null
   source_share_crn      = local.is_replica ? var.create_share.replica.source_share_crn : null
   replication_cron_spec = local.is_replica ? var.create_share.replica.cron_spec : null
-
-
 }
-
-
 
 ########################################################################################################################
 # KMS IAM Authorization Policies
