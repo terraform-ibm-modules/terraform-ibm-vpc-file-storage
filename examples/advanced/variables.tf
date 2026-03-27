@@ -14,17 +14,17 @@ variable "region" {
 }
 variable "resource_group" {
   type        = string
-  description = "An existing resource group name to use for this example, if unset a new resource group will be created"
+  description = "An existing resource group name to use for this example, if unset a new resource group will be created."
   default     = null
 }
 variable "prefix" {
-  description = "The prefix that you would like to append to your resources"
+  description = "The prefix that you would like to append to your resources."
   type        = string
   default     = "fs"
 }
 
 variable "resource_tags" {
-  description = "List of Tags for the resource created"
+  description = "List of tags for the resource created."
   type        = list(string)
   default     = null
 }
@@ -35,8 +35,7 @@ variable "access_tags" {
   default     = []
 }
 variable "replica_region" {
-  description = "The region where your file storage instance replica will be created "
+  description = "The region where your file storage instance replica will be created."
   type        = string
   default     = "us-east"
 }
-

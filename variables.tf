@@ -16,7 +16,7 @@ variable "tags" {
 
 variable "access_tags" {
   type        = list(string)
-  description = "A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)"
+  description = "A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
   default     = []
 
   validation {
@@ -147,19 +147,19 @@ variable "create_share" {
 
 
 variable "zone" {
-  description = "Zone where the file share will be created, use `ibmcloud is zones` command in the target region to find zones available for each region."
+  description = "Zone where the file share will be created, To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list)."
   type        = string
   default     = null
 }
 
 variable "profile" {
   type        = string
-  description = "Storage profile with which the file storage instance will be created "
+  description = "Storage profile with which the file storage instance will be created. [know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)"
   default     = "dp2"
 
   validation {
     condition     = var.profile == "dp2"
-    error_message = "Only \"dp2\" is supported by this module currently. Other profiles (for example \"rfs\") are intentionally not supported yet due to limited availability refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)"
+    error_message = "Only \"dp2\" is supported by this module currently. Other profiles (for example \"rfs\") are intentionally not supported yet due to limited availability refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)."
   }
 
 }
@@ -167,24 +167,24 @@ variable "profile" {
 variable "name" {
   description = "The unique name for this file storage for vpc instance."
   type        = string
-  default     = "fs"
+  default     = "share"
 }
 
 variable "size" {
-  description = "File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview) "
+  description = "File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview)."
   type        = number
   default     = 10
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
 
 variable "iops" {
-  description = "The maximum input/output operation performance bandwidth per second for the file share. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview) "
+  description = "The maximum input/output operation performance bandwidth per second for the file share. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview)."
   type        = number
   default     = 100
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
 variable "initial_owner_uid" {
-  description = "Initial owner user ID (UID) applied to the root directory of the file share when mounted."
+  description = "Initial owner user ID (UID) applied to the root directory of the file share when mounted. [know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids)."
   type        = number
   default     = 10000
   validation {
@@ -194,7 +194,7 @@ variable "initial_owner_uid" {
 }
 
 variable "initial_owner_gid" {
-  description = "Initial owner group ID (GID) applied to the root directory of the file share when mounted."
+  description = "Initial owner group ID (GID) applied to the root directory of the file share when mounted.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids)."
   type        = number
   default     = 100
   validation {
@@ -208,7 +208,7 @@ variable "initial_owner_gid" {
 variable "vpc_mount_targets" {
   type        = list(string)
   default     = []
-  description = "List of VPC IDs to mount file share . If set the file storage is created with VPC access mode"
+  description = "List of VPC IDs to mount file share . If set the file storage is created with VPC access mode.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
   validation {
     condition     = !(length(var.vpc_mount_targets) > 0 && length(var.sg_mount_targets) > 0)
     error_message = "Only one can be set: vpc_mount_targets or sg_mount_targets."
@@ -224,7 +224,7 @@ variable "vpc_mount_targets" {
 }
 
 variable "sg_mount_targets" {
-  description = "Security-group based mount targets. If set the file storage is created with Security Group access mode"
+  description = "Security-group based mount targets. If set the file storage is created with Security Group access mode.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
   type = list(object({
     vni_id = optional(string)
 
@@ -288,7 +288,7 @@ variable "sg_mount_targets" {
         )
       )
     ])
-    error_message = "Within sg_mount_targets if primary_ip, reserved_ip is mutually exclusive with address and name (and auto_delete if you choose to enforce strictly)."
+    error_message = "Within sg_mount_targets in primary_ip, reserved_ip is mutually exclusive with address and name (and auto_delete if you choose to enforce strictly)."
   }
 }
 
@@ -298,7 +298,7 @@ variable "sg_mount_targets" {
 
 variable "encryption_key_crn" {
   type        = string
-  description = "Encryption key CRN for file share encryption"
+  description = "Encryption key CRN for file share encryption."
   default     = null
 }
 
@@ -309,7 +309,7 @@ variable "skip_iam_share_authorization_policy" {
 }
 
 variable "kms_encryption_enabled" {
-  description = "Enable Key management , if set to `false` IBM-managed keys are used by default"
+  description = "Enable Key management , if set to `false` IBM-managed keys are used by default."
   type        = bool
   default     = false
   validation {

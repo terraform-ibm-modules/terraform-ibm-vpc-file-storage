@@ -97,7 +97,7 @@ locals {
           source      = "0.0.0.0/0"
         },
         {
-          name      = "allow-nfs-inbound-response"
+          name      = "allow-nfs-outbound-response"
           action    = "allow"
           direction = "inbound"
           tcp = {
@@ -160,5 +160,6 @@ module "replica" {
     replica = {
       source_share_id = module.file_storage.file_share.id
       cron_spec       = "0 */5 * * *"
-  } }
+    }
+  }
 }
