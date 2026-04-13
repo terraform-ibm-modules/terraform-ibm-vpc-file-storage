@@ -2,14 +2,6 @@
 # Input variables
 ########################################################################################################################
 
-#
-# Module developer tips:
-#   - Examples are references that consumers can use to see how the module can be consumed. They are not designed to be
-#     flexible re-usable solutions for general consumption, so do not expose any more variables here and instead hard
-#     code things in the example main.tf with code comments explaining the different configurations.
-#   - For the same reason as above, do not add default values to the example inputs.
-#
-
 variable "ibmcloud_api_key" {
   type        = string
   description = "The IBM Cloud API Key."
@@ -21,19 +13,49 @@ variable "region" {
   description = "Region to provision all resources created by this example."
 }
 
-variable "prefix" {
-  type        = string
-  description = "A string value to prefix to all resources created by this example."
-}
-
 variable "resource_group" {
   type        = string
-  description = "The name of an existing resource group to provision resources in to. If not set a new resource group will be created using the prefix variable."
+  description = "An existing resource group name to use for this example, if unset a new resource group will be created."
   default     = null
 }
 
+variable "prefix" {
+  description = "The prefix that you would like to append to your resources."
+  type        = string
+  default     = "fs"
+}
+
 variable "resource_tags" {
-  type        = list(string)
   description = "List of resource tag to associate with all resource instances created by this example."
+  type        = list(string)
+  default     = null
+}
+
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the VSI resources created by the example."
   default     = []
+}
+
+variable "replica_region" {
+  description = "The region where your file storage instance replica will be created."
+  type        = string
+  default     = "us-east"
+}
+
+variable "encryption_key_crn" {
+  type        = string
+  description = "Encryption key CRN for file share encryption."
+  default     = null
+}
+
+variable "kms_encryption_enabled" {
+  description = "Enable Key management , if set to `false` IBM-managed keys are used by default."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = !(var.kms_encryption_enabled && var.encryption_key_crn == null)
+    error_message = "encryption_key_crn must be provided when kms_encryption_enabled is true."
+  }
 }

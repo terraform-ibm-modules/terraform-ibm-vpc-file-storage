@@ -1,0 +1,102 @@
+# File Storage for VPC snapshot_restore module
+
+You can use this submodule to provision and configure a new [File Storage for VPC](https://cloud.ibm.com/docs/vpc?group=about-file-storage) instance [restored](https://cloud.ibm.com/docs/vpc?topic=vpc-fs-snapshots-restore&interface=terraform) from an snapshot (either existing or created by the module) of an existing file storage instance
+
+
+### Usage
+```hcl
+
+module "file_storage" {
+  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
+  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  mode              = "snapshot_restore"
+  name              = "snapshot-restored"
+  crn               = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance
+  snapshot_restore  = {
+       snapshot_name = "snap1"
+       create_snapshot_if_missing = true
+  }
+}
+```
+
+## Required IAM access policies
+You need the following permissions to run this module.
+
+- Account Management
+    - **Resource Group** service
+        - `Viewer` platform access
+- IAM Services
+    - **VPC Infrastructure Services** service
+        - `Administrator` platform access
+
+
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+### Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
+| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.88.0, < 2.0.0 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1, < 1.0.0 |
+
+### Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_existing_kms_key_crn_parser"></a> [existing\_kms\_key\_crn\_parser](#module\_existing\_kms\_key\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.4.1 |
+| <a name="module_share_crn_parser"></a> [share\_crn\_parser](#module\_share\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.4.1 |
+
+### Resources
+
+| Name | Type |
+|------|------|
+| [ibm_iam_authorization_policy.file_share_policy](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/iam_authorization_policy) | resource |
+| [ibm_is_share.restored_file_storage](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share) | resource |
+| [ibm_is_share_snapshot.snapshot](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share_snapshot) | resource |
+| [time_sleep.wait_for_authorization_policy](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
+| [ibm_is_share.source](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_share) | data source |
+| [ibm_is_share_snapshots.existing](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_share_snapshots) | data source |
+
+### Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial). | `list(string)` | `[]` | no |
+| <a name="input_encryption_key_crn"></a> [encryption\_key\_crn](#input\_encryption\_key\_crn) | Encryption key CRN for file share encryption. | `string` | `null` | no |
+| <a name="input_initial_owner_gid"></a> [initial\_owner\_gid](#input\_initial\_owner\_gid) | Initial owner group ID (GID) applied to the root directory of the file share when mounted.[learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids). | `number` | `100` | no |
+| <a name="input_initial_owner_uid"></a> [initial\_owner\_uid](#input\_initial\_owner\_uid) | Initial owner user ID (UID) applied to the root directory of the file share when mounted. [learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids). | `number` | `10000` | no |
+| <a name="input_iops"></a> [iops](#input\_iops) | The maximum input/output operation performance bandwidth per second for the file share. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview). | `number` | `100` | no |
+| <a name="input_kms_encryption_enabled"></a> [kms\_encryption\_enabled](#input\_kms\_encryption\_enabled) | Enable Key management , if set to `false` IBM-managed keys are used by default. | `bool` | `false` | no |
+| <a name="input_name"></a> [name](#input\_name) | The unique name for this restored file storage instance. | `string` | `"share"` | no |
+| <a name="input_profile"></a> [profile](#input\_profile) | Storage profile with which the file storage instance will be created. [learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui) | `string` | `"dp2"` | no |
+| <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | ID of resource group to provision file storage. | `string` | `null` | no |
+| <a name="input_size"></a> [size](#input\_size) | File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview). | `number` | `10` | no |
+| <a name="input_skip_iam_share_authorization_policy"></a> [skip\_iam\_share\_authorization\_policy](#input\_skip\_iam\_share\_authorization\_policy) | When using an existing KMS instance name, set this value to true if authorization is already enabled between KMS instance and the VPC file share. Otherwise, default is set to false. Ensuring proper authorization avoids access issues during deployment.For more information on how to create authorization policy manually, see [creating authorization policies for VPC file share](https://cloud.ibm.com/docs/vpc?topic=vpc-file-s2s-auth&interface=ui). | `bool` | `false` | no |
+| <a name="input_snapshot_restore"></a> [snapshot\_restore](#input\_snapshot\_restore) | Snapshot restore settings (used only when mode is "snapshot\_restore"). | <pre>object({<br/>    snapshot_id                = optional(string)<br/>    snapshot_crn               = optional(string)<br/>    snapshot_name              = optional(string)<br/>    create_snapshot_if_missing = optional(bool, false)<br/>  })</pre> | `null` | no |
+| <a name="input_source_crn"></a> [source\_crn](#input\_source\_crn) | Source file share CRN used to look up or create the snapshot by name. | `string` | `null` | no |
+| <a name="input_source_id"></a> [source\_id](#input\_source\_id) | Source file share ID used to look up or create the snapshot by name. | `string` | `null` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | List of tags to apply to resources created by this module. | `list(string)` | `[]` | no |
+
+### Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_access_control_mode"></a> [access\_control\_mode](#output\_access\_control\_mode) | The access control mode for the file share. |
+| <a name="output_access_tags"></a> [access\_tags](#output\_access\_tags) | Access management tags associated with the file share. |
+| <a name="output_allowed_transit_encryption_modes"></a> [allowed\_transit\_encryption\_modes](#output\_allowed\_transit\_encryption\_modes) | The transit encryption modes allowed for this file share. |
+| <a name="output_created_at"></a> [created\_at](#output\_created\_at) | The RFC3339 timestamp when the file share was created. |
+| <a name="output_crn"></a> [crn](#output\_crn) | The Cloud Resource Name (CRN) of the file share. |
+| <a name="output_encryption"></a> [encryption](#output\_encryption) | The type of encryption used for this file share. |
+| <a name="output_href"></a> [href](#output\_href) | The URL (href) of the file share. |
+| <a name="output_id"></a> [id](#output\_id) | The unique identifier of the file share. |
+| <a name="output_iops"></a> [iops](#output\_iops) | The maximum IOPS for the file share. |
+| <a name="output_lifecycle_state"></a> [lifecycle\_state](#output\_lifecycle\_state) | The lifecycle state of the file share. |
+| <a name="output_name"></a> [name](#output\_name) | The unique name of the file share within the region. |
+| <a name="output_profile"></a> [profile](#output\_profile) | The storage profile used by the file share. |
+| <a name="output_resource_group"></a> [resource\_group](#output\_resource\_group) | The resource group ID that owns the file share. |
+| <a name="output_resource_type"></a> [resource\_type](#output\_resource\_type) | The resource type of the file share. |
+| <a name="output_size"></a> [size](#output\_size) | The capacity of the file share in GB. |
+| <a name="output_source_snapshot"></a> [source\_snapshot](#output\_source\_snapshot) | The snapshot from which this share was cloned. |
+| <a name="output_tags"></a> [tags](#output\_tags) | User tags associated with the file share. |
+| <a name="output_zone"></a> [zone](#output\_zone) | The zone in which the file share resides. |
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

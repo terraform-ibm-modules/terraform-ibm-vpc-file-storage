@@ -1,38 +1,34 @@
+output "file_share" {
+  value       = module.file_storage.file_share
+  description = "File share details"
+}
+
+output "mount_targets" {
+  value       = module.file_storage.mount_targets
+  description = "Mount target details"
+}
+
+output "cross_regional_replica" {
+  value       = module.cross_regional_replica.file_share
+  description = "Cross Regional Replica details"
+}
+
+output "vsi_security_group" {
+  description = "Security group for the VSI."
+  value       = module.vsi.vsi_security_group
+}
+
+output "vsi_data" {
+  description = "A list of VSI with name, id, zone, and primary ipv4 address."
+  value       = module.vsi.list
+}
+
 ##############################################################################
-# Outputs
+# SSH Key
 ##############################################################################
 
-#
-# Developer tips:
-#   - Include all relevant outputs from the modules being called in the example
-#
-
-output "account_id" {
-  description = "An alpha-numeric value identifying the account ID."
-  value       = module.cos.account_id
-}
-
-output "guid" {
-  description = "The GUID of the resource instance."
-  value       = module.cos.account_id
-}
-
-output "id" {
-  description = "The unique identifier of the resource instance."
-  value       = module.cos.id
-}
-
-output "crn" {
-  description = "The CRN of the resource instance."
-  value       = module.cos.crn
-}
-
-output "resource_group_name" {
-  description = "Resource group name."
-  value       = module.resource_group.resource_group_name
-}
-
-output "resource_group_id" {
-  description = "Resource group ID."
-  value       = module.resource_group.resource_group_id
+output "ssh_private_key" {
+  value       = tls_private_key.tls_key.private_key_pem
+  description = "The ssh private key data in [PEM (RFC 1421)](https://datatracker.ietf.org/doc/html/rfc1421) format."
+  sensitive   = true
 }
