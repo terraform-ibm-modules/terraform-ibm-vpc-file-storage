@@ -2,12 +2,12 @@
 # Outputs
 ##############################################################################
 
-output "restored_file_storage" {
+output "accessor_share" {
   value       = module.accessor.file_share
-  description = "restored file storage details"
+  description = "accessor file storage instance details"
 }
 
 output "mount_targets" {
   value       = module.accessor.mount_targets
-  description = "Mount target details"
+  description = "Details of the mount targets of this accessor file storage instance"
 }

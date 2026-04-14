@@ -2,12 +2,6 @@
 # Account Variables
 ##############################################################################
 
-# variable "resource_group_id" {
-#   description = "ID of resource group to provision file storage."
-#   type        = string
-#   default     = null
-# }
-
 variable "tags" {
   description = "List of tags to apply to resources created by this module."
   type        = list(string)

@@ -1,16 +1,16 @@
 output "file_share" {
   value       = module.file_storage.file_share
-  description = "File share details"
+  description = "Details of the file storage instance created"
 }
 
 output "mount_targets" {
   value       = module.file_storage.mount_targets
-  description = "Mount target details"
+  description = "Details of the mount targets of this file storage instance"
 }
 
 output "cross_regional_replica" {
   value       = module.cross_regional_replica.file_share
-  description = "Cross Regional Replica details"
+  description = "Details of the cross regional for this file storage instance"
 }
 
 output "vsi_security_group" {

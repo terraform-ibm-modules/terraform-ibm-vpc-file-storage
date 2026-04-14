@@ -1,8 +1,9 @@
 output "file_share" {
-  description = "Outputs of the file share created for the selected mode."
+  description = "Details of the file share created for the selected mode."
   value = (
     var.mode == "standard" ? module.standard[0] :
     var.mode == "replica" ? module.replica[0] :
+    var.mode == "accessor" ? module.accessor[0] :
     var.mode == "snapshot_restore" ? module.snapshot_restore[0] :
     null
   )

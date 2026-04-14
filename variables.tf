@@ -142,12 +142,8 @@ variable "iops" {
   # Value validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 
   validation {
-    condition = (
-      contains(["standard", "replica", "snapshot_restore"], var.mode)
-      ? var.iops != null
-      : var.iops == null
-    )
-    error_message = "iops must be set only when mode is 'standard', 'replica', or 'snapshot_restore'."
+    condition     = var.mode != "accessor" || var.iops == null
+    error_message = "iops must not be set when mode is 'accessor'."
   }
 
 }
