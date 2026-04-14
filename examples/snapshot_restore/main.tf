@@ -25,6 +25,8 @@ module "restored_file_storage" {
   # version         = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   mode              = "snapshot_restore"
   name              = "${local.prefix}-restored"
+  tags              = var.resource_tags
+  access_tags       = var.access_tags
   resource_group_id = module.resource_group.resource_group_id
   crn               = var.existing_fileshare_crn
   size              = 10
@@ -35,5 +37,4 @@ module "restored_file_storage" {
     snapshot_name              = "snap1"
     create_snapshot_if_missing = true
   }
-
 }

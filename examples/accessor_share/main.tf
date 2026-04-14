@@ -88,8 +88,10 @@ module "accessor" {
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
   # source   = "terraform-ibm-modules/vpc-file-storage/ibm/"
   # version  = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  depends_on = [time_sleep.wait_for_share_broker_policy]
-  mode       = "accessor"
-  name       = "${local.prefix}-aces-bind"
-  crn        = var.existing_fileshare_crn
+  depends_on  = [time_sleep.wait_for_share_broker_policy]
+  tags        = var.resource_tags
+  access_tags = var.access_tags
+  mode        = "accessor"
+  name        = "${local.prefix}-aces-bind"
+  crn         = var.existing_fileshare_crn
 }

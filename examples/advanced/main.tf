@@ -229,21 +229,25 @@ module "vsi" {
 module "file_storage" {
   source = "../../"
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
-  # source          = "terraform-ibm-modules/vpc-file-storage/ibm/"
-  # version         = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "${local.prefix}-adv-share"
-  resource_group_id = module.resource_group.resource_group_id
-  size              = 10
-  iops              = 100
-  zone              = "${var.region}-1"
-  initial_owner_gid = 100
-  initial_owner_uid = 10000
+  # source                            = "terraform-ibm-modules/vpc-file-storage/ibm/"
+  # version                           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name                                = "${local.prefix}-adv-share"
+  resource_group_id                   = module.resource_group.resource_group_id
+  tags                                = var.resource_tags
+  access_tags                         = var.access_tags
+  size                                = 10
+  iops                                = 100
+  zone                                = "${var.region}-1"
+  initial_owner_gid                   = 100
+  initial_owner_uid                   = 10000
+  kms_encryption_enabled              = var.kms_encryption_enabled
+  skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
+  encryption_key_crn                  = var.encryption_key_crn
   sg_mount_targets = [{
     security_group_ids = [module.vsi.vsi_security_group.id]
     subnet_id          = module.vpc.subnet_ids[0]
   }]
-  kms_encryption_enabled = var.kms_encryption_enabled
-  encryption_key_crn     = var.encryption_key_crn
+
 }
 
 module "cross_regional_replica" {
@@ -255,6 +259,8 @@ module "cross_regional_replica" {
   # source               = "terraform-ibm-modules/vpc-file-storage/ibm/"
   # version              = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   mode                   = "replica"
+  tags                   = var.resource_tags
+  access_tags            = var.access_tags
   name                   = "${local.prefix}-replica"
   zone                   = "us-east-1"
   crn                    = module.file_storage.file_share.crn # for cross-regional replica only crn must be passed

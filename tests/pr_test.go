@@ -58,7 +58,10 @@ func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptio
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "fs", basicExampleDir)
+	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueId()))
+	options := setupOptions(t, Prefix, basicExampleDir)
+	options.TerraformVars["kms_encryption_enabled"] = true
+	options.TerraformVars["encryption_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -67,10 +70,8 @@ func TestRunBasicExample(t *testing.T) {
 
 func TestRunAdvancedExample(t *testing.T) {
 	t.Parallel()
-
-	options := setupOptions(t, "adv", advancedExampleDir)
-	options.TerraformVars["kms_encryption_enabled"] = true
-	options.TerraformVars["encryption_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
+	Prefix := fmt.Sprintf("adv-%s", strings.ToLower(random.UniqueId()))
+	options := setupOptions(t, Prefix, advancedExampleDir)
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -80,9 +81,8 @@ func TestRunAdvancedExample(t *testing.T) {
 func TestRunUpgradeAdvancedExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "adv-upg", advancedExampleDir)
-	options.TerraformVars["kms_encryption_enabled"] = true
-	options.TerraformVars["encryption_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
+	Prefix := fmt.Sprintf("adv-upg-%s", strings.ToLower(random.UniqueId()))
+	options := setupOptions(t, Prefix, advancedExampleDir)
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
@@ -96,7 +96,7 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 	prefix := fmt.Sprintf("%s-t-%s", "fs", strings.ToLower(random.UniqueId()))
 	realTerraformDir := ".."
 	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
-
+	tags := common.GetTagsFromTravis()
 	// Verify ibmcloud_api_key variable is set
 	checkVariable := "TF_VAR_ibmcloud_api_key"
 	val, present := os.LookupEnv(checkVariable)
@@ -105,69 +105,52 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 
 	logger.Log(t, "Tempdir: ", tempTerraformDir)
 
-	sourceOpts := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir + "/examples/advanced",
 		Vars: map[string]interface{}{
-			"prefix": prefix,
-			"region": region,
+			"prefix":        prefix,
+			"region":        region,
+			"resource_tags": tags,
 		},
 		Upgrade: true,
 	})
+	terraform.Init(t, existingTerraformOptions)
+	terraform.WorkspaceSelectOrNew(t, existingTerraformOptions, prefix)
+	_, existErr := terraform.InitAndApplyE(t, existingTerraformOptions)
 
-	_, err := terraform.InitE(t, sourceOpts)
-	require.NoError(t, err)
-
-	terraform.WorkspaceSelectOrNew(t, sourceOpts, prefix)
-
-	// Defer source cleanup immediately — runs even if Apply or later steps fail
-	defer func() {
-		envVal, _ := os.LookupEnv("DO_NOT_DESTROY_ON_FAILURE")
-		if t.Failed() && strings.ToLower(envVal) == "true" {
-			logger.Log(t, "Terratest failed. Debug the test and delete resources manually.")
-			return
+	if existErr != nil {
+		assert.True(t, existErr == nil, "Init and Apply of temp existing resource failed")
+	} else {
+		// Extract file_share.crn
+		type fileShareOutput struct {
+			Crn string `json:"crn"`
 		}
-		logger.Log(t, "START: Destroy (source resources)")
-		terraform.Destroy(t, sourceOpts)
-		terraform.WorkspaceDelete(t, sourceOpts, prefix)
-		logger.Log(t, "END: Destroy (source resources)")
-	}()
 
-	_, err = terraform.ApplyE(t, sourceOpts)
-	if err != nil {
-		t.Fatalf("Source apply failed, triggering deferred destroy: %v", err)
-	}
+		fileShareJSON := terraform.OutputJson(t, existingTerraformOptions, "file_share")
 
-	// Extract file_share.crn
-	type fileShareOutput struct {
-		Crn string `json:"crn"`
-	}
-
-	fileShareJSON := terraform.OutputJson(t, sourceOpts, "file_share")
-
-	var fs fileShareOutput
-	err = json.Unmarshal([]byte(fileShareJSON), &fs)
-	require.NoError(t, err)
-	require.NotEmpty(t, fs.Crn)
-
-	logger.Log(t, "source file_share.crn: ", fs.Crn)
-
-	// 2) Apply snapshot_restore example using that CRN
-	snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueId()))
-	snapOpts := setupOptions(t, snapPrefix, snapshotRestoreExampleDir)
-	snapOpts.TerraformVars["existing_fileshare_crn"] = fs.Crn
-	defer func() {
-		envVal, _ := os.LookupEnv("DO_NOT_DESTROY_ON_FAILURE")
-		if t.Failed() && strings.ToLower(envVal) == "true" {
-
-			return
+		var fs fileShareOutput
+		if err := json.Unmarshal([]byte(fileShareJSON), &fs); err != nil {
+			t.Logf("Warning: failed to unmarshal file_share output: %v", err)
 		}
-		logger.Log(t, "START: Destroy (snapshot_restore resources)")
-		terraform.Init(t, snapOpts.TerraformOptions)
-		terraform.Destroy(t, snapOpts.TerraformOptions)
-		logger.Log(t, "END: Destroy (snapshot_restore resources)")
-	}()
+		logger.Log(t, "source file_share.crn: ", fs.Crn)
 
-	output, err := snapOpts.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
+		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueId()))
+		options := setupOptions(t, snapPrefix, snapshotRestoreExampleDir)
+		options.TerraformVars["existing_fileshare_crn"] = fs.Crn
+
+		output, err := options.RunTestConsistency()
+		assert.Nil(t, err, "This should not have errored")
+		assert.NotNil(t, output, "Expected some output")
+	}
+	// Check if "DO_NOT_DESTROY_ON_FAILURE" is set
+	envVal, _ := os.LookupEnv("DO_NOT_DESTROY_ON_FAILURE")
+	// Destroy the temporary existing resources if required
+	if t.Failed() && strings.ToLower(envVal) == "true" {
+		fmt.Println("Terratest failed. Debug the test and delete resources manually.")
+	} else {
+		logger.Log(t, "START: Destroy (existing resources)")
+		terraform.Destroy(t, existingTerraformOptions)
+		terraform.WorkspaceDelete(t, existingTerraformOptions, prefix)
+		logger.Log(t, "END: Destroy (existing resources)")
+	}
 }

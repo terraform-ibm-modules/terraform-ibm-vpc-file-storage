@@ -144,16 +144,19 @@ module "vpc" {
 module "file_storage" {
   source = "../../"
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
-  # source          = "terraform-ibm-modules/vpc-file-storage/ibm/"
-  # version         = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "${local.prefix}-basic-share"
-  resource_group_id = module.resource_group.resource_group_id
-  size              = 10
-  iops              = 100
-  initial_owner_gid = 100
-  initial_owner_uid = 10000
-  zone              = "${var.region}-1"
-  vpc_mount_targets = [module.vpc.vpc_id]
+  # source                            = "terraform-ibm-modules/vpc-file-storage/ibm/"
+  # version                           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name                                = "${local.prefix}-basic-share"
+  resource_group_id                   = module.resource_group.resource_group_id
+  size                                = 10
+  iops                                = 100
+  initial_owner_gid                   = 100
+  initial_owner_uid                   = 10000
+  zone                                = "${var.region}-1"
+  vpc_mount_targets                   = [module.vpc.vpc_id]
+  kms_encryption_enabled              = var.kms_encryption_enabled
+  skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
+  encryption_key_crn                  = var.encryption_key_crn
 }
 
 module "replica" {
@@ -162,6 +165,8 @@ module "replica" {
   # source          = "terraform-ibm-modules/vpc-file-storage/ibm/"
   # version         = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   mode              = "replica"
+  tags              = var.resource_tags
+  access_tags       = var.access_tags
   name              = "${local.prefix}-replica"
   zone              = "${var.region}-2"
   id                = module.file_storage.file_share.id

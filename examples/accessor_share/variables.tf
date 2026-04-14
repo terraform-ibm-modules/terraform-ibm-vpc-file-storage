@@ -22,6 +22,18 @@ variable "resource_group" {
   default     = null
 }
 
+variable "resource_tags" {
+  description = "List of resource tag to associate with all resource instances created by this example."
+  type        = list(string)
+  default     = null
+}
+
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the VSI resources created by the example."
+  default     = []
+}
+
 variable "prefix" {
   description = "The prefix that you would like to append to your resources."
   type        = string
