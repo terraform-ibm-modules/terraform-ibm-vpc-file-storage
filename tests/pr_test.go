@@ -105,7 +105,6 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 
 	logger.Log(t, "Tempdir: ", tempTerraformDir)
 
-	// 1) Apply source example first
 	sourceOpts := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir + "/examples/advanced",
 		Vars: map[string]interface{}{
@@ -136,7 +135,6 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 	_, err = terraform.ApplyE(t, sourceOpts)
 	if err != nil {
 		t.Fatalf("Source apply failed, triggering deferred destroy: %v", err)
-		// t.Fatalf calls runtime.Goexit(), so deferred funcs still run
 	}
 
 	// Extract file_share.crn
@@ -160,7 +158,7 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 	defer func() {
 		envVal, _ := os.LookupEnv("DO_NOT_DESTROY_ON_FAILURE")
 		if t.Failed() && strings.ToLower(envVal) == "true" {
-			// Already logged in the source defer
+
 			return
 		}
 		logger.Log(t, "START: Destroy (snapshot_restore resources)")
