@@ -84,6 +84,28 @@ locals {
           }
           destination = "0.0.0.0/0"
           source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-nfs-outbound"
+          action    = "allow"
+          direction = "outbound"
+          tcp = {
+            port_min = 2049
+            port_max = 2049
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
+        },
+        {
+          name      = "allow-nfs-outbound-response"
+          action    = "allow"
+          direction = "inbound"
+          tcp = {
+            source_port_min = 2049
+            source_port_max = 2049
+          }
+          destination = "0.0.0.0/0"
+          source      = "0.0.0.0/0"
         }
       ]
     }
