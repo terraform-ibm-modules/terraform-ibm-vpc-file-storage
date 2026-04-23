@@ -1,4 +1,3 @@
-// Tests in this file are run in the PR pipeline and the continuous testing pipeline
 package test
 
 import (
@@ -19,19 +18,17 @@ import (
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 )
 
-// Use existing resource group
 const resourceGroup = "geretain-test-resources"
 const region = "us-south"
 
-// Ensure every example directory has a corresponding test
 const advancedExampleDir = "examples/advanced"
 const basicExampleDir = "examples/basic"
 const snapshotRestoreExampleDir = "examples/snapshot_restore"
 
-const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml" // Define a struct with fields that match the structure of the YAML data
+const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
+
 var permanentResources map[string]interface{}
 
-// TestMain will be run before any parallel tests, used to read data from yaml for use with tests
 func TestMain(m *testing.M) {
 
 	var err error
@@ -54,14 +51,13 @@ func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptio
 	return options
 }
 
-// Consistency test for the basic example
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
 	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueId()))
 	options := setupOptions(t, Prefix, basicExampleDir)
 	options.TerraformVars["kms_encryption_enabled"] = true
-	options.TerraformVars["encryption_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
+	options.TerraformVars["kms_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")

@@ -154,7 +154,7 @@ variable "snapshot_restore" {
 # KMS Variables
 ##############################################################################
 
-variable "encryption_key_crn" {
+variable "kms_key_crn" {
   type        = string
   description = "Encryption key CRN for file share encryption."
   default     = null
@@ -171,7 +171,7 @@ variable "kms_encryption_enabled" {
   type        = bool
   default     = false
   validation {
-    condition     = !(var.kms_encryption_enabled && var.encryption_key_crn == null)
-    error_message = "encryption_key_crn must be provided when kms_encryption_enabled is true."
+    condition     = !(var.kms_encryption_enabled && var.kms_key_crn == null)
+    error_message = "kms_key_crn must be provided when kms_encryption_enabled is true."
   }
 }

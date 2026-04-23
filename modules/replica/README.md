@@ -13,25 +13,17 @@ Using this module you can create the following replicas :
 ```hcl
 
 module "replica" {
-  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
-  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  mode      = "replica"
-  name      = "zonal-replica"
-  zone      = "us-south-2"
-  id        = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual ID of the file storage instance to create replica for
-  cron_spec         = "0 */5 * * *"
+  source                 = "terraform-ibm-modules/vpc-file-storage/ibm//modules/replica"
+  version                = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name                   = "cross-regional-replica"
+  zone                   = "us-east-2"
+  iops                   = 100
+  cross_regional_replica = true
+  kms_key_crn            = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
+  cron_spec              = "0 */5 * * *"
+  source_crn             = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX" # Replace with the actual CRN of the file storage instance to create replica for
 }
 
-module "cross_regional_replica" {
-  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
-  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  mode      = "replica"
-  name      = "cross-regional-replica"
-  zone      = "us-east-2"
-  crn        = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance to create replica for
-  cron_spec         = "0 */5 * * *"
-  cross_regional_replica = true
-}
 ```
 
 ## Required IAM access policies
@@ -74,10 +66,10 @@ You need the following permissions to run this module.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial). | `list(string)` | `[]` | no |
-| <a name="input_cron_spec"></a> [cron\_spec](#input\_cron\_spec) | The cron specification expression for the file share replication schedule. | `string` | `null` | no |
+| <a name="input_cron_spec"></a> [cron\_spec](#input\_cron\_spec) | The cron specification expression for the file share replication schedule. | `string` | `"0 */5 * * *"` | no |
 | <a name="input_cross_regional_replica"></a> [cross\_regional\_replica](#input\_cross\_regional\_replica) | Set true, if provisioning the replica file share in a zone that is in a different region than the source file share. Note : source file share and its cross-regional replica must be in the same account. | `bool` | `false` | no |
-| <a name="input_encryption_key_crn"></a> [encryption\_key\_crn](#input\_encryption\_key\_crn) | Encryption key CRN for the replica file share , required if creating a cross regional replica of a source file share that has customer-managed encryption. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-create-replication&interface=terraform). | `string` | `null` | no |
 | <a name="input_iops"></a> [iops](#input\_iops) | The maximum input/output operation performance bandwidth per second for the file share. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview). | `number` | `100` | no |
+| <a name="input_kms_key_crn"></a> [kms\_key\_crn](#input\_kms\_key\_crn) | Encryption key CRN for the replica file share , required if creating a cross regional replica of a source file share that has customer-managed encryption. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-create-replication&interface=terraform). | `string` | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | The unique name for this file storage for vpc instance. | `string` | `"share"` | no |
 | <a name="input_profile"></a> [profile](#input\_profile) | Storage profile with which the file storage instance will be created. [learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui) | `string` | `"dp2"` | no |
 | <a name="input_source_crn"></a> [source\_crn](#input\_source\_crn) | The CRN of the source file share. The specified file share must not already have a replica, and must not be a replica. Note for cross regional replica only CRN should be set [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-create-replication&interface=terraform) | `string` | `null` | no |

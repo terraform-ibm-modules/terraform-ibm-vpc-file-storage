@@ -13,7 +13,7 @@ module "standard" {
   zone                                = var.zone
   kms_encryption_enabled              = var.kms_encryption_enabled
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
-  encryption_key_crn                  = var.encryption_key_crn
+  kms_key_crn                         = var.kms_key_crn
   tags                                = var.tags
   access_tags                         = var.access_tags
   access_control_mode                 = length(var.sg_mount_targets) > 0 ? "security_group" : "vpc"
@@ -29,7 +29,7 @@ module "replica" {
   zone                   = var.zone
   iops                   = var.iops
   cross_regional_replica = var.cross_regional_replica
-  encryption_key_crn     = var.cross_regional_replica ? var.encryption_key_crn : null
+  kms_key_crn            = var.cross_regional_replica ? var.kms_key_crn : null
   tags                   = var.tags
   access_tags            = var.access_tags
   cron_spec              = var.cron_spec
@@ -47,7 +47,7 @@ module "snapshot_restore" {
   resource_group_id                   = var.resource_group_id
   kms_encryption_enabled              = var.kms_encryption_enabled
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
-  encryption_key_crn                  = var.encryption_key_crn
+  kms_key_crn                         = var.kms_key_crn
   tags                                = var.tags
   access_tags                         = var.access_tags
   initial_owner_gid                   = var.initial_owner_gid

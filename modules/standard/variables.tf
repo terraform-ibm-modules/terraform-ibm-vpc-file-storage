@@ -81,7 +81,7 @@ variable "initial_owner_uid" {
   default     = 10000
   validation {
     condition     = var.initial_owner_uid >= 10000
-    error_message = "initial_owner_uid must be >= 10000 (UID 0-10000 are reserved/used; UID 10000+ is available for user accounts)."
+    error_message = "`initial_owner_uid` Must be >= 10000 (UID 0-10000 are reserved/used; UID 10000+ is available for user accounts)."
   }
 }
 
@@ -91,7 +91,7 @@ variable "initial_owner_gid" {
   default     = 100
   validation {
     condition     = var.initial_owner_gid >= 100
-    error_message = "initial_owner_gid must be >= 100 (GID 0-99 are reserved; GID 100+ is allocated for user groups)."
+    error_message = "`initial_owner_gid` Must be >= 100 (GID 0-99 are reserved; GID 100+ is allocated for user groups)."
   }
 }
 
@@ -99,7 +99,7 @@ variable "initial_owner_gid" {
 # KMS Variables
 ##############################################################################
 
-variable "encryption_key_crn" {
+variable "kms_key_crn" {
   type        = string
   description = "Encryption key CRN for file share encryption."
   default     = null
@@ -116,7 +116,7 @@ variable "kms_encryption_enabled" {
   type        = bool
   default     = false
   validation {
-    condition     = !(var.kms_encryption_enabled && var.encryption_key_crn == null)
-    error_message = "encryption_key_crn must be provided when kms_encryption_enabled is true."
+    condition     = !(var.kms_encryption_enabled && var.kms_key_crn == null)
+    error_message = "`kms_key_crn` Must be provided when kms_encryption_enabled is true."
   }
 }

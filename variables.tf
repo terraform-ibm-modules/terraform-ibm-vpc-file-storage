@@ -13,7 +13,7 @@ variable "resource_group_id" {
       ? true
       : (var.resource_group_id == null || trimspace(var.resource_group_id) == "")
     )
-    error_message = "resource_group_id can be set only when mode is 'standard' or 'snapshot_restore'."
+    error_message = "resource_group_id Can be set only when mode is 'standard' or 'snapshot_restore'."
   }
 }
 
@@ -51,7 +51,7 @@ variable "mode" {
   default     = "standard"
   validation {
     condition     = contains(["standard", "snapshot_restore", "accessor", "replica"], var.mode)
-    error_message = "mode must be one of: standard, snapshot_restore, accessor, replica."
+    error_message = "Mode` must be one of: standard, snapshot_restore, accessor, replica."
   }
 }
 
@@ -101,7 +101,7 @@ variable "zone" {
       ? true
       : (var.zone == null || trimspace(var.zone) == "")
     )
-    error_message = "zone can be set only when mode is 'standard' or 'replica' ."
+    error_message = "Zone can be set only when mode is 'standard' or 'replica' ."
   }
 
 }
@@ -130,7 +130,7 @@ variable "size" {
       ? var.size != null
       : var.size == null
     )
-    error_message = "size must be set only when mode is 'standard' or 'snapshot_restore'."
+    error_message = "Size must be set only when mode is 'standard' or 'snapshot_restore'."
   }
 
 }
@@ -143,7 +143,7 @@ variable "iops" {
 
   validation {
     condition     = var.mode != "accessor" || var.iops == null
-    error_message = "iops must not be set when mode is 'accessor'."
+    error_message = "Iops must not be set when mode is 'accessor'."
   }
 
 }
@@ -159,11 +159,11 @@ variable "initial_owner_uid" {
       ? var.initial_owner_uid != null
       : var.initial_owner_uid == null
     )
-    error_message = "initial_owner_uid must be set only when mode is 'standard' or 'snapshot_restore'."
+    error_message = "`initial_owner_uid` Must be set only when mode is 'standard' or 'snapshot_restore'."
   }
   validation {
     condition     = var.initial_owner_uid == null || var.initial_owner_uid >= 10000
-    error_message = "initial_owner_uid must be >= 10000 (UID 0-10000 are reserved/used; UID 10000+ is available for user accounts)."
+    error_message = "`initial_owner_uid` Must be >= 10000 (UID 0-10000 are reserved/used; UID 10000+ is available for user accounts)."
   }
 }
 
@@ -177,11 +177,11 @@ variable "initial_owner_gid" {
       ? var.initial_owner_gid != null
       : var.initial_owner_gid == null
     )
-    error_message = "initial_owner_gid must be set only when mode is 'standard' or 'snapshot_restore'."
+    error_message = "`initial_owner_gid` Must be set only when mode is 'standard' or 'snapshot_restore'."
   }
   validation {
     condition     = var.initial_owner_gid == null || var.initial_owner_gid >= 100
-    error_message = "initial_owner_gid must be >= 100 (GID 0-99 are reserved; GID 100+ is allocated for user groups)."
+    error_message = "`initial_owner_gid` Must be >= 100 (GID 0-99 are reserved; GID 100+ is allocated for user groups)."
   }
 }
 
@@ -262,7 +262,7 @@ variable "sg_mount_targets" {
 # Replica Share Variables
 ##############################################################################
 variable "cron_spec" {
-  description = "The cron specification expression for the file share replication schedule."
+  description = "The cron specification expression for the file share replication schedule. Required when creating a replica share"
   type        = string
   default     = null
 
@@ -272,7 +272,7 @@ variable "cron_spec" {
       ? (var.cron_spec != null && trimspace(var.cron_spec) != "")
       : (var.cron_spec == null || trimspace(var.cron_spec) == "")
     )
-    error_message = "cron_spec must be set (non-empty) only when mode is `replica`; otherwise it must be null/empty."
+    error_message = "`cron_spec` Must be set (non-empty) only when mode is `replica`; otherwise it must be null/empty."
   }
 }
 
@@ -283,7 +283,7 @@ variable "cross_regional_replica" {
 
   validation {
     condition     = var.mode == "replica" || var.cross_regional_replica == false
-    error_message = "cross_regional_replica can be true only when mode is `replica`."
+    error_message = "`cross_regional_replica` Can be true only when mode is `replica`."
   }
 }
 ##############################################################################
@@ -303,7 +303,7 @@ variable "snapshot_restore" {
 
   validation {
     condition     = (var.mode == "snapshot_restore") == (var.snapshot_restore != null)
-    error_message = "snapshot_restore must be set if and only if mode is \"snapshot_restore\"."
+    error_message = "`snapshot_restore` Must be set if and only if mode is \"snapshot_restore\"."
   }
 
 }
@@ -312,7 +312,7 @@ variable "snapshot_restore" {
 # KMS Variables
 ##############################################################################
 
-variable "encryption_key_crn" {
+variable "kms_key_crn" {
   type        = string
   description = "Encryption key CRN for file share encryption."
   default     = null
@@ -320,20 +320,20 @@ variable "encryption_key_crn" {
   validation {
     condition = (
       var.mode != "accessor"
-      || var.encryption_key_crn == null
-      || trimspace(var.encryption_key_crn) == ""
+      || var.kms_key_crn == null
+      || trimspace(var.kms_key_crn) == ""
     )
-    error_message = "encryption_key_crn must be null/empty when mode is 'accessor'."
+    error_message = "`kms_key_crn` Must be null/empty when mode is 'accessor'."
   }
 
   validation {
     condition = (
       var.mode != "replica"
       || var.cross_regional_replica
-      || var.encryption_key_crn == null
-      || trimspace(var.encryption_key_crn) == ""
+      || var.kms_key_crn == null
+      || trimspace(var.kms_key_crn) == ""
     )
-    error_message = "When mode is 'replica' and cross_regional_replica is false, encryption_key_crn must be null/empty. When cross_regional_replica is true, encryption_key_crn is optional."
+    error_message = "When mode is 'replica' and cross_regional_replica is false, kms_key_crn must be null/empty. When cross_regional_replica is true, kms_key_crn is optional."
   }
 }
 
@@ -348,7 +348,7 @@ variable "skip_iam_share_authorization_policy" {
       ? var.skip_iam_share_authorization_policy == false
       : true
     )
-    error_message = "skip_iam_share_authorization_policy must be false when mode is 'replica' or 'accessor'."
+    error_message = "`skip_iam_share_authorization_policy` Must be false when mode is 'replica' or 'accessor'."
   }
 }
 
@@ -358,8 +358,8 @@ variable "kms_encryption_enabled" {
   default     = false
 
   validation {
-    condition     = !(var.kms_encryption_enabled && var.encryption_key_crn == null)
-    error_message = "encryption_key_crn must be provided when kms_encryption_enabled is true."
+    condition     = !(var.kms_encryption_enabled && var.kms_key_crn == null)
+    error_message = "`kms_key_crn` Must be provided when kms_encryption_enabled is true."
   }
 
 
@@ -369,6 +369,6 @@ variable "kms_encryption_enabled" {
       ? var.kms_encryption_enabled == false
       : true
     )
-    error_message = "kms_encryption_enabled must be false when mode is 'replica' or 'accessor'."
+    error_message = "`kms_encryption_enabled` Must be false when mode is 'replica' or 'accessor'."
   }
 }

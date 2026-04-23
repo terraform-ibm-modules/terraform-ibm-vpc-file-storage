@@ -8,7 +8,7 @@ resource "ibm_is_share" "replica" {
   profile               = var.profile
   zone                  = var.zone
   iops                  = var.iops
-  encryption_key        = var.cross_regional_replica ? var.encryption_key_crn : null
+  encryption_key        = var.cross_regional_replica ? var.kms_key_crn : null
   tags                  = var.tags
   access_tags           = var.access_tags
   replication_cron_spec = var.cron_spec

@@ -7,15 +7,16 @@ You can use this submodule to provision and configure [File Storage for VPC](htt
 ```hcl
 
 module "file_storage" {
-  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
-  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "file-storage-instance-name"
-  resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX" # Replace with the actual ID of resource group to use
-  size              = 10
-  iops              = 100
-  zone              = "us-south-1"
-  vpc_mount_targets = [ "79cxxxx-xxxx-xxxx-xxxx-xxxxxXX8667" ]
+  source                              = "terraform-ibm-modules/vpc-file-storage/ibm//modules/standard"
+  version                             = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name                                = "file-storage-instance-name"
+  size                                = 10
+  iops                                = 100
+  resource_group_id                   = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
+  zone                                = "us-south-1"
+  access_control_mode                 = "security_group"
 }
+
 ```
 
 ## Required IAM access policies
@@ -58,11 +59,11 @@ You need the following permissions to run this module.
 |------|-------------|------|---------|:--------:|
 | <a name="input_access_control_mode"></a> [access\_control\_mode](#input\_access\_control\_mode) | Controls how the mount target authorizes access to the file share (security\_group for Security Group based access, or vpc for same-zone VPC access).[Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode). | `string` | `null` | no |
 | <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial). | `list(string)` | `[]` | no |
-| <a name="input_encryption_key_crn"></a> [encryption\_key\_crn](#input\_encryption\_key\_crn) | Encryption key CRN for file share encryption. | `string` | `null` | no |
 | <a name="input_initial_owner_gid"></a> [initial\_owner\_gid](#input\_initial\_owner\_gid) | Initial owner group ID (GID) applied to the root directory of the file share when mounted.[learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids). | `number` | `100` | no |
 | <a name="input_initial_owner_uid"></a> [initial\_owner\_uid](#input\_initial\_owner\_uid) | Initial owner user ID (UID) applied to the root directory of the file share when mounted. [learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids). | `number` | `10000` | no |
 | <a name="input_iops"></a> [iops](#input\_iops) | The maximum input/output operation performance bandwidth per second for the file share. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview). | `number` | `100` | no |
 | <a name="input_kms_encryption_enabled"></a> [kms\_encryption\_enabled](#input\_kms\_encryption\_enabled) | Enable Key management , if set to `false` IBM-managed keys are used by default. | `bool` | `false` | no |
+| <a name="input_kms_key_crn"></a> [kms\_key\_crn](#input\_kms\_key\_crn) | Encryption key CRN for file share encryption. | `string` | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | The unique name for this file storage for vpc instance. | `string` | `"share"` | no |
 | <a name="input_profile"></a> [profile](#input\_profile) | Storage profile with which the file storage instance will be created. [learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui). | `string` | `"dp2"` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | ID of resource group to provision file storage. | `string` | `null` | no |

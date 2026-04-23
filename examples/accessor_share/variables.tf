@@ -6,7 +6,7 @@ variable "ibmcloud_api_key" {
 
 variable "ibmcloud_accessor_api_key" {
   type        = string
-  description = "The IBM Cloud API Key required for authentication and provisioning resources. This is sensitive information and should be kept secure."
+  description = "The accessor account IBM Cloud API Key required for authentication and provisioning resources. This is sensitive information and should be kept secure."
   sensitive   = true
 }
 

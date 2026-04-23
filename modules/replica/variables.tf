@@ -65,7 +65,7 @@ variable "cross_regional_replica" {
 variable "cron_spec" {
   description = "The cron specification expression for the file share replication schedule."
   type        = string
-  default     = null
+  default     = "0 */5 * * *"
 
   validation {
     condition = can(
@@ -112,17 +112,17 @@ variable "source_crn" {
   default     = null
 }
 
-variable "encryption_key_crn" {
+variable "kms_key_crn" {
   type        = string
   default     = null
   description = "Encryption key CRN for the replica file share , required if creating a cross regional replica of a source file share that has customer-managed encryption. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-create-replication&interface=terraform)."
 
   validation {
     condition = (
-      var.encryption_key_crn == null ||
-      trim(var.encryption_key_crn) == "" ||
+      var.kms_key_crn == null ||
+      trim(var.kms_key_crn) == "" ||
       var.cross_regional_replica == true
     )
-    error_message = "If `encryption_key_crn` is set , `cross_regional_replica` must be true; "
+    error_message = "If `kms_key_crn` is set , `cross_regional_replica` must be true; "
   }
 }

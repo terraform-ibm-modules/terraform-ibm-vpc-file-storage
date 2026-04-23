@@ -10,7 +10,7 @@ resource "ibm_is_share" "share" {
   iops                             = var.iops
   resource_group                   = var.resource_group_id
   zone                             = var.zone
-  encryption_key                   = var.kms_encryption_enabled ? var.encryption_key_crn : null
+  encryption_key                   = var.kms_encryption_enabled ? var.kms_key_crn : null
   tags                             = var.tags
   access_tags                      = var.access_tags
   allowed_transit_encryption_modes = var.access_control_mode == "security_group" ? ["ipsec", "none"] : null
@@ -30,10 +30,10 @@ resource "ibm_is_share" "share" {
 ########################################################################################################################
 
 module "existing_kms_key_crn_parser" {
-  count   = local.create_auth_policy ? 0 : 1
+  count   = local.create_auth_policy ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
   version = "1.4.1"
-  crn     = var.encryption_key_crn
+  crn     = var.kms_key_crn
 }
 
 locals {
@@ -41,11 +41,11 @@ locals {
   kms_service_name   = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].service_name
   kms_account_id     = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].account_id
   kms_key_id         = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].resource
-  create_auth_policy = !var.kms_encryption_enabled || var.skip_iam_share_authorization_policy
+  create_auth_policy = var.kms_encryption_enabled && !var.skip_iam_share_authorization_policy
 }
 
 resource "ibm_iam_authorization_policy" "file_share_policy" {
-  count                = local.create_auth_policy ? 0 : 1
+  count                = local.create_auth_policy ? 1 : 0
   source_service_name  = "is"
   source_resource_type = "share"
   roles                = ["Reader"]

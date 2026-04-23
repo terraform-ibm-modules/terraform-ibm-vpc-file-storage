@@ -5,7 +5,7 @@ module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
   version = "1.5.0"
   # if an existing resource group is not set (null) create a new one using prefix
-  resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
+  resource_group_name          = var.resource_group == null ? "${local.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
 }
 
@@ -264,7 +264,7 @@ module "file_storage" {
   initial_owner_uid                   = 10000
   kms_encryption_enabled              = var.kms_encryption_enabled
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
-  encryption_key_crn                  = var.encryption_key_crn
+  kms_key_crn                         = var.kms_key_crn
   sg_mount_targets = [{
     security_group_ids = [module.vsi.vsi_security_group.id]
     subnet_id          = module.vpc.subnet_ids[0]
@@ -289,5 +289,5 @@ module "cross_regional_replica" {
   iops                   = module.file_storage.file_share.iops
   cron_spec              = "0 */5 * * *"
   cross_regional_replica = true
-  encryption_key_crn     = var.kms_encryption_enabled ? var.encryption_key_crn : null # if parent of the cross-regional replica has user managed key , it must be passed here
+  kms_key_crn            = var.kms_encryption_enabled ? var.kms_key_crn : null # if parent of the cross-regional replica has user managed key , it must be passed here
 }

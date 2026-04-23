@@ -7,12 +7,12 @@ You can use this submodule to provision and configure [File Storage for VPC acce
 ```hcl
 
 module "accessor" {
-  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
-  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "file-storage-instance-name"
-  mode              = "accessor"
-  crn               = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance in another account to create accessor binding for
+  source      = "terraform-ibm-modules/vpc-file-storage/ibm//modules/accessor"
+  version     = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name        = "file-storage-instance-name"
+  source_crn  = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance in another account to create accessor binding for
 }
+
 ```
 
 ## Required IAM access policies

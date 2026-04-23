@@ -73,6 +73,48 @@ module "file_storage" {
   zone              = "us-south-1"
   vpc_mount_targets = [ "79cxxxx-xxxx-xxxx-xxxx-xxxxxXX8667" ]
 }
+
+module "replica" {
+  source    = "terraform-ibm-modules/vpc-file-storage/ibm"
+  version   = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  mode      = "replica"
+  name      = "zonal-replica"
+  zone      = "us-south-2"
+  id        = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual ID of the file storage instance to create replica for
+  cron_spec = "0 */5 * * *"
+}
+
+module "cross_regional_replica" {
+  source                 = "terraform-ibm-modules/vpc-file-storage/ibm"
+  version                = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  mode                   = "replica"
+  name                   = "cross-regional-replica"
+  zone                   = "us-east-2"
+  crn                    = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance to create replica for
+  cron_spec              = "0 */5 * * *"
+  cross_regional_replica = true
+}
+
+module "snapshot_restored_file_storage" {
+  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
+  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  mode              = "snapshot_restore"
+  name              = "snapshot-restored"
+  resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
+  crn               = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance
+  snapshot_restore  = {
+       snapshot_name = "snap1"
+       create_snapshot_if_missing = true
+  }
+}
+
+module "accessor" {
+  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
+  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name              = "file-storage-instance-name"
+  mode              = "accessor"
+  crn               = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance in another account to create accessor binding for
+}
 ```
 
 ## Required IAM access policies
