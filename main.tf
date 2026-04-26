@@ -19,6 +19,7 @@ module "standard" {
   access_control_mode                 = length(var.sg_mount_targets) > 0 ? "security_group" : "vpc"
   initial_owner_gid                   = var.initial_owner_gid
   initial_owner_uid                   = var.initial_owner_uid
+  allowed_access_protocols            = var.allowed_access_protocols
 }
 
 module "replica" {
@@ -55,6 +56,7 @@ module "snapshot_restore" {
   snapshot_restore                    = var.snapshot_restore
   source_crn                          = var.crn
   source_id                           = var.id
+  allowed_access_protocols            = var.allowed_access_protocols
 }
 
 module "accessor" {

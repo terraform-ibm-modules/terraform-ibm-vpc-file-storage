@@ -43,6 +43,12 @@ variable "zone" {
   default     = null
 }
 
+variable "allowed_access_protocols" {
+  description = "List of allowed access protocols for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
+  type        = list(string)
+  default     = ["nfs4"]
+}
+
 variable "access_control_mode" {
   description = "Controls how the mount target authorizes access to the file share (security_group for Security Group based access, or vpc for same-zone VPC access).[Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
   type        = string

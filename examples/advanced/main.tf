@@ -5,13 +5,12 @@ module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
   version = "1.5.0"
   # if an existing resource group is not set (null) create a new one using prefix
-  resource_group_name          = var.resource_group == null ? "${local.prefix}-resource-group" : null
+  resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
 }
 
 locals {
   ssh_key_id = resource.ibm_is_ssh_key.ssh_key.id
-  prefix     = var.prefix != null && trimspace(var.prefix) != "" ? trimspace(var.prefix) : ""
   network_acls = [
     {
       name                         = "vpc-acl"
@@ -181,7 +180,7 @@ resource "tls_private_key" "tls_key" {
 }
 
 resource "ibm_is_ssh_key" "ssh_key" {
-  name       = "${local.prefix}-ssh-key"
+  name       = "${var.prefix}-ssh-key"
   public_key = resource.tls_private_key.tls_key.public_key_openssh
 }
 
@@ -195,7 +194,7 @@ module "vpc" {
   version           = "8.15.10"
   resource_group_id = module.resource_group.resource_group_id
   region            = var.region
-  prefix            = local.prefix
+  prefix            = var.prefix
   tags              = var.resource_tags
   subnets = {
     zone-1 = [
@@ -235,7 +234,7 @@ module "vsi" {
   access_tags           = var.access_tags
   subnets               = module.vpc.subnet_zone_list
   vpc_id                = module.vpc.vpc_id
-  prefix                = "${local.prefix}-vsi"
+  prefix                = "${var.prefix}-vsi"
   machine_type          = "bx2d-2x8"
   user_data             = null
   vsi_per_subnet        = 1
@@ -253,7 +252,7 @@ module "file_storage" {
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
   # source                            = "terraform-ibm-modules/vpc-file-storage/ibm/"
   # version                           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name                                = "${local.prefix}-adv-share"
+  name                                = "${var.prefix}-adv-share"
   resource_group_id                   = module.resource_group.resource_group_id
   tags                                = var.resource_tags
   access_tags                         = var.access_tags
@@ -262,6 +261,7 @@ module "file_storage" {
   zone                                = "${var.region}-1"
   initial_owner_gid                   = 100
   initial_owner_uid                   = 10000
+  allowed_access_protocols            = ["nfs4"]
   kms_encryption_enabled              = var.kms_encryption_enabled
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
   kms_key_crn                         = var.kms_key_crn
@@ -283,7 +283,7 @@ module "cross_regional_replica" {
   mode                   = "replica"
   tags                   = var.resource_tags
   access_tags            = var.access_tags
-  name                   = "${local.prefix}-replica"
+  name                   = "${var.prefix}-replica"
   zone                   = "us-east-1"
   crn                    = module.file_storage.file_share.crn # for cross-regional replica only crn must be passed
   iops                   = module.file_storage.file_share.iops

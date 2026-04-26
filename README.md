@@ -64,14 +64,15 @@ provider "ibm" {
 }
 
 module "file_storage" {
-  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
-  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "file-storage-instance-name"
-  resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX" # Replace with the actual ID of resource group to use
-  size              = 10
-  iops              = 100
-  zone              = "us-south-1"
-  vpc_mount_targets = [ "79cxxxx-xxxx-xxxx-xxxx-xxxxxXX8667" ]
+  source                   = "terraform-ibm-modules/vpc-file-storage/ibm"
+  version                  = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  name                     = "file-storage-instance-name"
+  resource_group_id        = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX" # Replace with the actual ID of resource group to use
+  allowed_access_protocols = [ "nfs4" ]
+  size                     = 10
+  iops                     = 100
+  zone                     = "us-south-1"
+  vpc_mount_targets        = [ "79cxxxx-xxxx-xxxx-xxxx-xxxxxXX8667" ]
 }
 
 module "replica" {
@@ -96,15 +97,17 @@ module "cross_regional_replica" {
 }
 
 module "snapshot_restored_file_storage" {
-  source            = "terraform-ibm-modules/vpc-file-storage/ibm"
-  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  mode              = "snapshot_restore"
-  name              = "snapshot-restored"
-  resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
-  crn               = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance
-  snapshot_restore  = {
-       snapshot_name = "snap1"
-       create_snapshot_if_missing = true
+  source                   = "terraform-ibm-modules/vpc-file-storage/ibm"
+  version                  = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  mode                     = "snapshot_restore"
+  name                     = "snapshot-restored"
+  allowed_access_protocols = [ "nfs4" ]
+  resource_group_id        = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
+  crn                      = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"  # Replace with the actual CRN of the file storage instance
+  snapshot_restore         = {
+
+          snapshot_name = "snap1"
+          create_snapshot_if_missing = true
   }
 }
 
@@ -127,18 +130,21 @@ You need the following permissions to run this module.
     - **VPC Infrastructure Services** service
         - `Administrator` platform access
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ### Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
-| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.86.0, < 2.0.0 |
+| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.88.0, < 3.0.0 |
 
 ### Modules
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_accessor"></a> [accessor](#module\_accessor) | ./modules/accessor | n/a |
 | <a name="module_replica"></a> [replica](#module\_replica) | ./modules/replica | n/a |
+| <a name="module_snapshot_restore"></a> [snapshot\_restore](#module\_snapshot\_restore) | ./modules/snapshot_restore | n/a |
 | <a name="module_standard"></a> [standard](#module\_standard) | ./modules/standard | n/a |
 
 ### Resources
@@ -152,22 +158,24 @@ You need the following permissions to run this module.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial). | `list(string)` | `[]` | no |
+| <a name="input_allowed_access_protocols"></a> [allowed\_access\_protocols](#input\_allowed\_access\_protocols) | List of allowed access protocols for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share) | `list(string)` | `[]` | no |
 | <a name="input_crn"></a> [crn](#input\_crn) | The CRN of the source file share (required for non-standard modes; set exactly one of id or crn). | `string` | `null` | no |
-| <a name="input_cron_spec"></a> [cron\_spec](#input\_cron\_spec) | The cron specification expression for the file share replication schedule. | `string` | `null` | no |
+| <a name="input_cron_spec"></a> [cron\_spec](#input\_cron\_spec) | The cron specification expression for the file share replication schedule. Required when creating a replica share | `string` | `null` | no |
 | <a name="input_cross_regional_replica"></a> [cross\_regional\_replica](#input\_cross\_regional\_replica) | Set true, if provisioning the replica file share in a zone that is in a different region than the source file share. Note : source file share and its cross-regional replica must be in the same account. | `bool` | `false` | no |
-| <a name="input_encryption_key_crn"></a> [encryption\_key\_crn](#input\_encryption\_key\_crn) | Encryption key CRN for file share encryption. | `string` | `null` | no |
 | <a name="input_id"></a> [id](#input\_id) | The ID of the source file share (required for non-standard modes; set exactly one of id or crn). | `string` | `null` | no |
-| <a name="input_initial_owner_gid"></a> [initial\_owner\_gid](#input\_initial\_owner\_gid) | Initial owner group ID (GID) applied to the root directory of the file share when mounted.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids). | `number` | `100` | no |
-| <a name="input_initial_owner_uid"></a> [initial\_owner\_uid](#input\_initial\_owner\_uid) | Initial owner user ID (UID) applied to the root directory of the file share when mounted. [know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids). | `number` | `10000` | no |
-| <a name="input_iops"></a> [iops](#input\_iops) | The maximum input/output operation performance bandwidth per second for the file share. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview). | `number` | `100` | no |
+| <a name="input_initial_owner_gid"></a> [initial\_owner\_gid](#input\_initial\_owner\_gid) | Initial owner group ID (GID) applied to the root directory of the file share when mounted.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids). | `number` | `null` | no |
+| <a name="input_initial_owner_uid"></a> [initial\_owner\_uid](#input\_initial\_owner\_uid) | Initial owner user ID (UID) applied to the root directory of the file share when mounted. [know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#FS-supplemental-ids). | `number` | `null` | no |
+| <a name="input_iops"></a> [iops](#input\_iops) | The maximum input/output operation performance bandwidth per second for the file share. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview). | `number` | `null` | no |
 | <a name="input_kms_encryption_enabled"></a> [kms\_encryption\_enabled](#input\_kms\_encryption\_enabled) | Enable Key management , if set to `false` IBM-managed keys are used by default. | `bool` | `false` | no |
-| <a name="input_mode"></a> [mode](#input\_mode) | Determines which type of file share to create:<br/>  - standard         : create a new empty share in a zone<br/>  - snapshot\_restore : create a share cloned from a snapshot<br/>  - accessor         : create an cross-account accessor share binding of an existing file share<br/>  - replica          : create an replica share of an existing file share | `string` | `"standard"` | no |
+| <a name="input_kms_key_crn"></a> [kms\_key\_crn](#input\_kms\_key\_crn) | Encryption key CRN for file share encryption. | `string` | `null` | no |
+| <a name="input_mode"></a> [mode](#input\_mode) | Determines which type of file share to create:<br/>  - standard         : create a new empty file share in a zone<br/>  - snapshot\_restore : create a file share cloned from a snapshot<br/>  - accessor         : create a cross-account accessor share binding of an existing file share<br/>  - replica          : create a replica share of an existing file share | `string` | `"standard"` | no |
 | <a name="input_name"></a> [name](#input\_name) | The unique name for this file storage for vpc instance. | `string` | `"share"` | no |
 | <a name="input_profile"></a> [profile](#input\_profile) | Storage profile with which the file storage instance will be created. [know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui) | `string` | `"dp2"` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | ID of resource group to provision file storage. | `string` | `null` | no |
 | <a name="input_sg_mount_targets"></a> [sg\_mount\_targets](#input\_sg\_mount\_targets) | Security-group based mount targets. If set the file storage is created with Security Group access mode.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode). | <pre>list(object({<br/>    vni_id = optional(string)<br/><br/>    # VNI prototype args (used when vni_id is not set)<br/>    subnet_id                     = optional(string)<br/>    security_group_ids            = optional(list(string), [])<br/>    resource_group_id             = optional(string)<br/>    protocol_state_filtering_mode = optional(string)<br/><br/>    # Reserved IP / Primary IP options<br/>    primary_ip = optional(object({<br/>      reserved_ip = optional(string)<br/>      auto_delete = optional(bool, true)<br/>      address     = optional(string)<br/>      name        = optional(string)<br/>    }))<br/><br/>    # Mount target settings<br/>    transit_encryption = optional(string, "none")<br/>    access_protocol    = optional(string, "nfs4")<br/>  }))</pre> | `[]` | no |
-| <a name="input_size"></a> [size](#input\_size) | File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview). | `number` | `10` | no |
+| <a name="input_size"></a> [size](#input\_size) | File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview). | `number` | `null` | no |
 | <a name="input_skip_iam_share_authorization_policy"></a> [skip\_iam\_share\_authorization\_policy](#input\_skip\_iam\_share\_authorization\_policy) | When using an existing KMS instance name, set this value to true if authorization is already enabled between KMS instance and the VPC file share. Otherwise, default is set to false. Ensuring proper authorization avoids access issues during deployment.For more information on how to create authorization policy manually, see [creating authorization policies for VPC file share](https://cloud.ibm.com/docs/vpc?topic=vpc-file-s2s-auth&interface=ui). | `bool` | `false` | no |
+| <a name="input_snapshot_restore"></a> [snapshot\_restore](#input\_snapshot\_restore) | Snapshot restore settings (used only when mode is "snapshot\_restore"). | <pre>object({<br/>    snapshot_id                = optional(string)<br/>    snapshot_crn               = optional(string)<br/>    snapshot_name              = optional(string)<br/>    create_snapshot_if_missing = optional(bool, false)<br/>  })</pre> | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | List of tags to apply to resources created by this module. | `list(string)` | `[]` | no |
 | <a name="input_vpc_mount_targets"></a> [vpc\_mount\_targets](#input\_vpc\_mount\_targets) | List of VPC IDs to mount file share . If set the file storage is created with VPC access mode.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode). | `list(string)` | `[]` | no |
 | <a name="input_zone"></a> [zone](#input\_zone) | Zone where the file share will be created, To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list). | `string` | `null` | no |
@@ -176,7 +184,7 @@ You need the following permissions to run this module.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_file_share"></a> [file\_share](#output\_file\_share) | Outputs of the file share created for the selected mode. |
+| <a name="output_file_share"></a> [file\_share](#output\_file\_share) | Details of the file share created for the selected mode. |
 | <a name="output_mount_targets"></a> [mount\_targets](#output\_mount\_targets) | Mount targets that were created and attached to this file storage instance. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

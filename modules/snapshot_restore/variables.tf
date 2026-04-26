@@ -49,6 +49,12 @@ variable "profile" {
 
 }
 
+variable "allowed_access_protocols" {
+  description = "List of allowed access protocols for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
+  type        = list(string)
+  default     = ["nfs4"]
+}
+
 variable "size" {
   description = "File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview)."
   type        = number

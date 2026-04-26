@@ -15,7 +15,7 @@ resource "ibm_is_share" "share" {
   access_tags                      = var.access_tags
   allowed_transit_encryption_modes = var.access_control_mode == "security_group" ? ["ipsec", "none"] : null
   access_control_mode              = var.access_control_mode
-  allowed_access_protocols         = ["nfs4"]
+  allowed_access_protocols         = var.allowed_access_protocols
   dynamic "initial_owner" {
     for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) ? [1] : []
     content {
@@ -37,10 +37,10 @@ module "existing_kms_key_crn_parser" {
 }
 
 locals {
-  existing_kms_guid  = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].service_instance
-  kms_service_name   = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].service_name
-  kms_account_id     = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].account_id
-  kms_key_id         = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].resource
+  existing_kms_guid  = local.create_auth_policy ? module.existing_kms_key_crn_parser[0].service_instance : null
+  kms_service_name   = local.create_auth_policy ? module.existing_kms_key_crn_parser[0].service_name : null
+  kms_account_id     = local.create_auth_policy ? module.existing_kms_key_crn_parser[0].account_id : null
+  kms_key_id         = local.create_auth_policy ? module.existing_kms_key_crn_parser[0].resource : null
   create_auth_policy = var.kms_encryption_enabled && !var.skip_iam_share_authorization_policy
 }
 
@@ -83,7 +83,7 @@ resource "ibm_iam_authorization_policy" "file_share_policy" {
 }
 
 resource "time_sleep" "wait_for_authorization_policy" {
-  count           = local.create_auth_policy ? 0 : 1
+  count           = local.create_auth_policy ? 1 : 0
   depends_on      = [ibm_iam_authorization_policy.file_share_policy[0]]
   create_duration = "30s"
 }

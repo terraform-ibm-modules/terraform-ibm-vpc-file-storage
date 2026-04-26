@@ -34,10 +34,13 @@ data "ibm_is_share_snapshots" "existing" {
 }
 
 locals {
-  matching_snapshot = local.use_snapshot_name && local.is_security_group ? one([
-    for s in try(data.ibm_is_share_snapshots.existing[0].snapshots, []) : s
-    if try(s.name, null) == var.snapshot_restore.snapshot_name
-  ]) : null
+  matching_snapshot = local.use_snapshot_name && local.is_security_group ? try(
+    one([
+      for s in try(data.ibm_is_share_snapshots.existing[0].snapshots, []) : s
+      if try(s.name, null) == var.snapshot_restore.snapshot_name
+    ]),
+    null
+  ) : null
 
   snapshot_exists = local.matching_snapshot != null
 
@@ -83,7 +86,7 @@ resource "ibm_is_share" "restored_file_storage" {
   encryption_key           = var.kms_encryption_enabled ? var.kms_key_crn : null
   tags                     = var.tags
   access_tags              = var.access_tags
-  allowed_access_protocols = ["nfs4"]
+  allowed_access_protocols = var.allowed_access_protocols
 
   dynamic "initial_owner" {
     for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) ? [1] : []
@@ -106,7 +109,17 @@ resource "ibm_is_share" "restored_file_storage" {
       condition     = local.is_security_group
       error_message = "restore from snapshot requires source share access_control_mode = \"security_group\" ."
     }
+    precondition {
+      condition = (
+        !local.use_snapshot_name ||
+        local.create_if_missing ||
+        local.snapshot_exists
+      )
+      error_message = "Snapshot '${var.snapshot_restore.snapshot_name}' was not found on share '${local.source_share_id}'. Either provide an existing snapshot name/CRN/ID, or set snapshot_restore.create_snapshot_if_missing = true to create it."
+    }
+
   }
+
 }
 ########################################################################################################################
 # KMS IAM Authorization Policies
@@ -120,10 +133,10 @@ module "existing_kms_key_crn_parser" {
 }
 
 locals {
-  existing_kms_guid  = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].service_instance
-  kms_service_name   = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].service_name
-  kms_account_id     = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].account_id
-  kms_key_id         = local.create_auth_policy ? null : module.existing_kms_key_crn_parser[0].resource
+  existing_kms_guid  = local.create_auth_policy ? module.existing_kms_key_crn_parser[0].service_instance : null
+  kms_service_name   = local.create_auth_policy ? module.existing_kms_key_crn_parser[0].service_name : null
+  kms_account_id     = local.create_auth_policy ? module.existing_kms_key_crn_parser[0].account_id : null
+  kms_key_id         = local.create_auth_policy ? module.existing_kms_key_crn_parser[0].resource : null
   create_auth_policy = var.kms_encryption_enabled && !var.skip_iam_share_authorization_policy
 }
 
@@ -166,7 +179,7 @@ resource "ibm_iam_authorization_policy" "file_share_policy" {
 }
 
 resource "time_sleep" "wait_for_authorization_policy" {
-  count           = local.create_auth_policy ? 0 : 1
+  count           = local.create_auth_policy ? 1 : 0
   depends_on      = [ibm_iam_authorization_policy.file_share_policy[0]]
   create_duration = "30s"
 }

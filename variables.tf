@@ -44,8 +44,8 @@ variable "mode" {
     Determines which type of file share to create:
       - standard         : create a new empty file share in a zone
       - snapshot_restore : create a file share cloned from a snapshot
-      - accessor         : create an cross-account accessor share binding of an existing file share
-      - replica          : create an replica share of an existing file share
+      - accessor         : create a cross-account accessor share binding of an existing file share
+      - replica          : create a replica share of an existing file share
   EOT
   type        = string
   default     = "standard"
@@ -118,6 +118,20 @@ variable "profile" {
 
 }
 
+variable "allowed_access_protocols" {
+  description = "List of allowed access protocols for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = (
+      contains(["standard", "snapshot_restore"], var.mode)
+      ? true
+      : length(var.allowed_access_protocols) == 0
+    )
+    error_message = "allowed_access_protocols can be set only when mode is `standard` or `snapshot_restore`. For other modes, set it to an empty list ([])."
+  }
+}
 variable "size" {
   description = "File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview)."
   type        = number

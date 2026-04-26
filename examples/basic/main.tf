@@ -6,12 +6,11 @@ module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
   version = "1.5.0"
   # if an existing resource group is not set (null) create a new one using prefix
-  resource_group_name          = var.resource_group == null ? "${local.prefix}-resource-group" : null
+  resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
 }
 
 locals {
-  prefix = var.prefix != null && trimspace(var.prefix) != "" ? trimspace(var.prefix) : ""
   network_acls = [
     {
       name                         = "vpc-acl"
@@ -121,7 +120,7 @@ module "vpc" {
   version           = "8.15.10"
   resource_group_id = module.resource_group.resource_group_id
   region            = var.region
-  prefix            = local.prefix
+  prefix            = var.prefix
   tags              = var.resource_tags
   name              = "vpc"
   subnets = {
@@ -146,12 +145,13 @@ module "file_storage" {
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
   # source                            = "terraform-ibm-modules/vpc-file-storage/ibm/"
   # version                           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name                                = "${local.prefix}-basic-share"
+  name                                = "${var.prefix}-basic-share"
   resource_group_id                   = module.resource_group.resource_group_id
   size                                = 10
   iops                                = 100
   initial_owner_gid                   = 100
   initial_owner_uid                   = 10000
+  allowed_access_protocols            = ["nfs4"]
   zone                                = "${var.region}-1"
   vpc_mount_targets                   = [module.vpc.vpc_id]
   kms_encryption_enabled              = var.kms_encryption_enabled
@@ -167,7 +167,7 @@ module "replica" {
   mode              = "replica"
   tags              = var.resource_tags
   access_tags       = var.access_tags
-  name              = "${local.prefix}-replica"
+  name              = "${var.prefix}-replica"
   zone              = "${var.region}-2"
   id                = module.file_storage.file_share.id
   iops              = module.file_storage.file_share.iops
