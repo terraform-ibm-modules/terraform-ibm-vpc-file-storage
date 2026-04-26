@@ -1,7 +1,6 @@
 package test
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -120,7 +119,7 @@ func provisionPreReq(t *testing.T) (string, *terraform.Options, error) {
 	logger.Log(t, "Tempdir: ", tempTerraformDir)
 
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: tempTerraformDir + "/examples/advanced",
+		TerraformDir: tempTerraformDir + "/tests/existing-resources",
 		Vars: map[string]interface{}{
 			"prefix":        prefix,
 			"region":        region,
@@ -146,22 +145,14 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 	if existErr != nil {
 		assert.True(t, existErr == nil, "Init and Apply of temp existing resource failed")
 	} else {
-		// Extract file_share.crn
-		type fileShareOutput struct {
-			Crn string `json:"crn"`
-		}
 
-		fileShareJSON := terraform.OutputJson(t, existingTerraformOptions, "file_share")
+		fileShareCrn := terraform.Output(t, existingTerraformOptions, "file_share_crn")
 
-		var fs fileShareOutput
-		if err := json.Unmarshal([]byte(fileShareJSON), &fs); err != nil {
-			t.Logf("Warning: failed to unmarshal file_share output: %v", err)
-		}
-		logger.Log(t, "source file_share.crn: ", fs.Crn)
+		logger.Log(t, "source file_share_crn: ", fileShareCrn)
 
 		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueId()))
 		options := setupOptions(t, snapPrefix, snapshotRestoreExampleDir)
-		options.TerraformVars["existing_fileshare_crn"] = fs.Crn
+		options.TerraformVars["existing_fileshare_crn"] = fileShareCrn
 
 		output, err := options.RunTestConsistency()
 		assert.Nil(t, err, "This should not have errored")
@@ -193,23 +184,14 @@ func TestRunUpgradeSnapshotRestoreExample(t *testing.T) {
 	if existErr != nil {
 		assert.True(t, existErr == nil, "Init and Apply of temp existing resource failed")
 	} else {
-		// Extract file_share.crn
-		type fileShareOutput struct {
-			Crn string `json:"crn"`
-		}
 
-		fileShareJSON := terraform.OutputJson(t, existingTerraformOptions, "file_share")
+		fileShareCrn := terraform.Output(t, existingTerraformOptions, "file_share_crn")
 
-		var fs fileShareOutput
-		if err := json.Unmarshal([]byte(fileShareJSON), &fs); err != nil {
-			t.Logf("Warning: failed to unmarshal file_share output: %v", err)
-		}
-
-		logger.Log(t, "source file_share.crn: ", fs.Crn)
+		logger.Log(t, "source file_share_crn: ", fileShareCrn)
 
 		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueId()))
 		options := setupOptions(t, snapPrefix, snapshotRestoreExampleDir)
-		options.TerraformVars["existing_fileshare_crn"] = fs.Crn
+		options.TerraformVars["existing_fileshare_crn"] = fileShareCrn
 
 		output, err := options.RunTestUpgrade()
 		if !options.UpgradeTestSkipped {
