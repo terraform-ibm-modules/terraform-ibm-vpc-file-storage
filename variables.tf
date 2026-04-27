@@ -129,7 +129,7 @@ variable "allowed_access_protocols" {
       ? true
       : length(var.allowed_access_protocols) == 0
     )
-    error_message = "allowed_access_protocols can be set only when mode is `standard` or `snapshot_restore`. For other modes, set it to an empty list ([])."
+    error_message = "allowed_access_protocols Can be set only when mode is `standard` or `snapshot_restore`. For other modes, set it to an empty list ([])."
   }
 }
 variable "size" {
