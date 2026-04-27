@@ -153,10 +153,15 @@ module "file_storage" {
   initial_owner_uid                   = 10000
   allowed_access_protocols            = ["nfs4"]
   zone                                = "${var.region}-1"
-  vpc_mount_targets                   = [module.vpc.vpc_id]
   kms_encryption_enabled              = var.kms_encryption_enabled
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
   kms_key_crn                         = var.kms_key_crn
+  vpc_mount_targets = {
+    "primary" = {
+      name   = "${var.prefix}-vpc-target"
+      vpc_id = module.vpc.vpc_id
+    }
+  }
 }
 
 module "replica" {
@@ -164,13 +169,18 @@ module "replica" {
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
   # source          = "terraform-ibm-modules/vpc-file-storage/ibm/"
   # version         = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  mode              = "replica"
-  tags              = var.resource_tags
-  access_tags       = var.access_tags
-  name              = "${var.prefix}-replica"
-  zone              = "${var.region}-2"
-  id                = module.file_storage.file_share.id
-  iops              = module.file_storage.file_share.iops
-  cron_spec         = "0 */5 * * *"
-  vpc_mount_targets = [module.vpc.vpc_id]
+  mode        = "replica"
+  tags        = var.resource_tags
+  access_tags = var.access_tags
+  name        = "${var.prefix}-replica"
+  zone        = "${var.region}-2"
+  id          = module.file_storage.file_share.id
+  iops        = module.file_storage.file_share.iops
+  cron_spec   = "0 */5 * * *"
+  vpc_mount_targets = {
+    "primary" = {
+      name   = "${var.prefix}-vpc-target"
+      vpc_id = module.vpc.vpc_id
+    }
+  }
 }

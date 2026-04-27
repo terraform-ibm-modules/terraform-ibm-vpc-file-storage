@@ -107,7 +107,7 @@ variable "initial_owner_gid" {
 
 variable "kms_key_crn" {
   type        = string
-  description = "Encryption key CRN for file share encryption."
+  description = "The CRN of the key management service key to encrypt the data in the File Storage instance."
   default     = null
 }
 
@@ -118,7 +118,7 @@ variable "skip_iam_share_authorization_policy" {
 }
 
 variable "kms_encryption_enabled" {
-  description = "Enable Key management , if set to `false` IBM-managed keys are used by default."
+  description = "Whether to use key management service key encryption to encrypt data in File storage instance  , if set to `false` IBM-managed keys are used by default."
   type        = bool
   default     = false
   validation {

@@ -46,7 +46,7 @@ variable "replica_region" {
 
 variable "kms_key_crn" {
   type        = string
-  description = "Encryption key CRN for file share encryption."
+  description = "The CRN of the key management service key to encrypt the data in the File Storage instance."
   default     = null
 }
 

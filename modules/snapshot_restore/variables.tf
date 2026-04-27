@@ -113,7 +113,7 @@ variable "source_crn" {
 }
 
 variable "snapshot_restore" {
-  description = "Snapshot restore settings (used only when mode is \"snapshot_restore\")."
+  description = "Snapshot restore settings to select the source snapshot by ID/CRN/name and optionally create the snapshot if the snapshot identified by snapshot_name does not exist before restoring."
   type = object({
     snapshot_id                = optional(string)
     snapshot_crn               = optional(string)
@@ -162,7 +162,7 @@ variable "snapshot_restore" {
 
 variable "kms_key_crn" {
   type        = string
-  description = "Encryption key CRN for file share encryption."
+  description = "The CRN of the key management service key to encrypt the data in the File Storage instance."
   default     = null
 }
 
@@ -173,7 +173,7 @@ variable "skip_iam_share_authorization_policy" {
 }
 
 variable "kms_encryption_enabled" {
-  description = "Enable Key management , if set to `false` IBM-managed keys are used by default."
+  description = "Whether to use key management service key encryption to encrypt data in File storage instance  , if set to `false` IBM-managed keys are used by default."
   type        = bool
   default     = false
   validation {

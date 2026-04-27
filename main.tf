@@ -83,20 +83,21 @@ locals {
   )
   mount_targets = merge(
     {
-      for idx, vpc_id in var.vpc_mount_targets :
-      "vpc-${idx}" => {
+      for k, mt in var.vpc_mount_targets :
+      "vpc-${k}" => {
         type   = "vpc"
-        vpc_id = vpc_id
+        name   = mt.name
+        vpc_id = mt.vpc_id
       }
     },
     {
-      for idx, mt in var.sg_mount_targets :
-      "sg-${idx}" => {
-        type               = "sg"
-        subnet_id          = mt.subnet_id
-        security_group_ids = mt.security_group_ids
-        transit_encryption = try(mt.transit_encryption, "none")
-      }
+      for k, mt in var.sg_mount_targets :
+      "sg-${k}" => merge(
+        {
+          type = "sg"
+        },
+        mt
+      )
     }
   )
 }
@@ -104,32 +105,33 @@ locals {
 resource "ibm_is_share_mount_target" "mount_targets" {
   for_each           = local.mount_targets
   share              = local.active_share_id
-  name               = format("%s-mount-target-%s", var.name, each.key)
+  name               = each.value.name
   access_protocol    = try(each.value.access_protocol, "nfs4")
   vpc                = each.value.type == "vpc" ? each.value.vpc_id : null
-  transit_encryption = each.value.type == "sg" ? each.value.transit_encryption : null
+  transit_encryption = each.value.type == "sg" ? try(each.value.transit_encryption, "none") : null
 
   dynamic "virtual_network_interface" {
     for_each = each.value.type == "sg" ? [1] : []
     content {
       # If using existing VNI
-      id = try(each.value.vni_id, null)
+      id = each.value.vni_id
 
       # If creating VNI
-      name            = try(each.value.vni_id, null) == null ? format("%s-fs-vni-%s", var.name, each.key) : null
-      subnet          = try(each.value.vni_id, null) == null ? try(each.value.subnet_id, null) : null
-      resource_group  = try(each.value.vni_id, null) == null ? try(each.value.resource_group_id, null) : null
-      security_groups = try(each.value.vni_id, null) == null ? try(each.value.security_group_ids, null) : null
+      name = each.value.vni_id == null ? format("%s-fs-vni-%s", var.name, each.key) : null
 
-      protocol_state_filtering_mode = try(each.value.vni_id, null) == null ? try(each.value.protocol_state_filtering_mode, null) : null
+      subnet          = each.value.vni_id == null ? each.value.subnet_id : null
+      resource_group  = each.value.vni_id == null ? each.value.resource_group_id : null
+      security_groups = each.value.vni_id == null ? each.value.security_group_ids : null
+
+      protocol_state_filtering_mode = each.value.vni_id == null ? each.value.protocol_state_filtering_mode : null
 
       dynamic "primary_ip" {
-        for_each = try(each.value.primary_ip, null) != null && try(each.value.vni_id, null) == null ? [1] : []
+        for_each = each.value.vni_id == null && each.value.primary_ip != null ? [1] : []
         content {
-          reserved_ip = try(each.value.primary_ip.reserved_ip, null)
-          auto_delete = try(each.value.primary_ip.reserved_ip, null) == null ? try(each.value.primary_ip.auto_delete, null) : null
-          address     = try(each.value.primary_ip.reserved_ip, null) == null ? try(each.value.primary_ip.address, null) : null
-          name        = try(each.value.primary_ip.reserved_ip, null) == null ? try(each.value.primary_ip.name, null) : null
+          reserved_ip = each.value.primary_ip.reserved_ip
+          auto_delete = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.auto_delete : null
+          address     = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.address : null
+          name        = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.name : null
         }
       }
     }

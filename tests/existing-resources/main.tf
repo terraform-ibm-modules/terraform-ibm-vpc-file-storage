@@ -262,8 +262,11 @@ module "file_storage" {
   initial_owner_gid        = 100
   initial_owner_uid        = 10000
   allowed_access_protocols = ["nfs4"]
-  sg_mount_targets = [{
-    security_group_ids = [module.vsi.vsi_security_group.id]
-    subnet_id          = module.vpc.subnet_ids[0]
-  }]
+  sg_mount_targets = {
+    "primary" = {
+      name               = "${var.prefix}-sg-target"
+      security_group_ids = [module.vsi.vsi_security_group.id]
+      subnet_id          = module.vpc.subnet_ids[0]
+    }
+  }
 }

@@ -32,7 +32,7 @@ variable "access_tags" {
     condition = alltrue([
       for tag in var.access_tags : can(regex("[\\w\\-_\\.]+:[\\w\\-_\\.]+", tag)) && length(tag) <= 128
     ])
-    error_message = "Tags must match the regular expression \"[\\w\\-_\\.]+:[\\w\\-_\\.]+\". For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#limits)."
+    error_message = "Tags must match the regular expression '[\\w\\-_\\.]+:[\\w\\-_\\.]+'. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#limits)."
   }
 }
 
@@ -91,7 +91,7 @@ variable "name" {
 }
 
 variable "zone" {
-  description = "Zone where the file share will be created, To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list)."
+  description = "Zone where the file share will be created. To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list)."
   type        = string
   default     = null
 
@@ -103,7 +103,6 @@ variable "zone" {
     )
     error_message = "Zone can be set only when mode is 'standard' or 'replica' ."
   }
-
 }
 
 variable "profile" {
@@ -115,7 +114,6 @@ variable "profile" {
     condition     = var.profile == "dp2"
     error_message = "Only 'dp2' is supported by this module currently. Other profiles (for example 'rfs') are intentionally not supported yet due to limited availability refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)."
   }
-
 }
 
 variable "allowed_access_protocols" {
@@ -132,6 +130,7 @@ variable "allowed_access_protocols" {
     error_message = "allowed_access_protocols Can be set only when mode is `standard` or `snapshot_restore`. For other modes, set it to an empty list ([])."
   }
 }
+
 variable "size" {
   description = "File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview)."
   type        = number
@@ -200,18 +199,28 @@ variable "initial_owner_gid" {
 }
 
 variable "vpc_mount_targets" {
-  type        = list(string)
-  default     = []
-  description = "List of VPC IDs to mount file share . If set the file storage is created with VPC access mode.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
+  description = "Map of VPC mount targets for the file share . If a value is provided for this the file storage is created with 'vpc' access_control_mode .[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
+  type = map(object({
+    vpc_id = string
+    name   = string
+  }))
+  default = {}
   validation {
     condition     = !(length(var.vpc_mount_targets) > 0 && length(var.sg_mount_targets) > 0)
     error_message = "Only one can be set: vpc_mount_targets or sg_mount_targets."
   }
+  validation {
+    condition = length(distinct([
+      for _, mt in var.vpc_mount_targets : mt.name
+    ])) == length(var.vpc_mount_targets)
+    error_message = "Within vpc_mount_targets, 'name' must be unique for each entry."
+  }
 }
 
 variable "sg_mount_targets" {
-  description = "Security-group based mount targets. If set the file storage is created with Security Group access mode.[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
-  type = list(object({
+  description = "Map of Security-group based mount targets for the file share. If a value is provided for this the file storage is created with 'security_group' access_control_mode .[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
+  type = map(object({
+    name   = string
     vni_id = optional(string)
 
     # VNI prototype args (used when vni_id is not set)
@@ -232,11 +241,18 @@ variable "sg_mount_targets" {
     transit_encryption = optional(string, "none")
     access_protocol    = optional(string, "nfs4")
   }))
-  default = []
+  default = {}
+
+  validation {
+    condition = length(distinct([
+      for _, mt in var.sg_mount_targets : mt.name
+    ])) == length(var.sg_mount_targets)
+    error_message = "Within sg_mount_targets, 'name' must be unique for each entry."
+  }
 
   validation {
     condition = alltrue([
-      for mt in var.sg_mount_targets :
+      for _, mt in var.sg_mount_targets :
       (
         try(mt.vni_id, null) == null
         ||
@@ -254,7 +270,7 @@ variable "sg_mount_targets" {
 
   validation {
     condition = alltrue([
-      for mt in var.sg_mount_targets :
+      for _, mt in var.sg_mount_targets :
       (
         try(mt.primary_ip, null) == null
         ||
@@ -306,7 +322,7 @@ variable "cross_regional_replica" {
 
 
 variable "snapshot_restore" {
-  description = "Snapshot restore settings (used only when mode is \"snapshot_restore\")."
+  description = "Snapshot restore settings to select the source snapshot by ID/CRN/name and optionally create the snapshot if the snapshot identified by snapshot_name does not exist before restoring. (used only when mode is 'snapshot_restore')."
   type = object({
     snapshot_id                = optional(string)
     snapshot_crn               = optional(string)
@@ -317,7 +333,7 @@ variable "snapshot_restore" {
 
   validation {
     condition     = (var.mode == "snapshot_restore") == (var.snapshot_restore != null)
-    error_message = "`snapshot_restore` Must be set if and only if mode is \"snapshot_restore\"."
+    error_message = "`snapshot_restore` Must be set if and only if mode is 'snapshot_restore'."
   }
 
 }
@@ -328,7 +344,7 @@ variable "snapshot_restore" {
 
 variable "kms_key_crn" {
   type        = string
-  description = "Encryption key CRN for file share encryption."
+  description = "The CRN of the key management service key to encrypt the data in the File Storage instance."
   default     = null
 
   validation {
@@ -367,7 +383,7 @@ variable "skip_iam_share_authorization_policy" {
 }
 
 variable "kms_encryption_enabled" {
-  description = "Enable Key management , if set to `false` IBM-managed keys are used by default."
+  description = "Whether to use key management service key encryption to encrypt data in File storage instance  , if set to `false` IBM-managed keys are used by default."
   type        = bool
   default     = false
 
