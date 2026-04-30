@@ -26,30 +26,13 @@ variable "access_tags" {
 ##############################################################################
 
 variable "name" {
-  description = "The unique name for this restored file storage instance."
+  description = "The unique name used to identify the file storage for vpc instance."
   type        = string
   default     = "share"
 }
 
-variable "source_id" {
-  description = "Source file share ID used to look up or create the snapshot by name."
-  type        = string
-  default     = null
-
-
-  validation {
-    condition = (
-      (
-        ((var.source_id != null && trimspace(var.source_id) != "") ? 1 : 0) +
-        ((var.source_crn != null && trimspace(var.source_crn) != "") ? 1 : 0)
-      ) == 1
-    )
-    error_message = "Exactly one of `source_id` or `source_crn` must be set ."
-  }
-}
-
 variable "source_crn" {
-  description = "Source file share CRN used to look up or create the snapshot by name."
+  description = "The Cloud Resource Name (CRN) of the source file share this source file share CRN is used to identify the cross account file share instance of which the binding needs to be created in the accessor account."
   type        = string
   default     = null
 }

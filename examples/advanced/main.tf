@@ -261,7 +261,7 @@ module "file_storage" {
   zone                                = "${var.region}-1"
   initial_owner_gid                   = 100
   initial_owner_uid                   = 10000
-  allowed_access_protocols            = ["nfs4"]
+  allowed_access_protocols            = "nfs4"
   kms_encryption_enabled              = var.kms_encryption_enabled
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
   kms_key_crn                         = var.kms_key_crn
@@ -289,7 +289,7 @@ module "cross_regional_replica" {
   access_tags            = var.access_tags
   name                   = "${var.prefix}-replica"
   zone                   = "us-east-1"
-  crn                    = module.file_storage.file_share.crn # for cross-regional replica only crn must be passed
+  source_crn             = module.file_storage.file_share.crn
   iops                   = module.file_storage.file_share.iops
   cron_spec              = "0 */5 * * *"
   cross_regional_replica = true

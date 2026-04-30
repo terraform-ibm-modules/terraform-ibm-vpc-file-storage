@@ -151,7 +151,7 @@ module "file_storage" {
   iops                                = 100
   initial_owner_gid                   = 100
   initial_owner_uid                   = 10000
-  allowed_access_protocols            = ["nfs4"]
+  allowed_access_protocols            = "nfs4"
   zone                                = "${var.region}-1"
   kms_encryption_enabled              = var.kms_encryption_enabled
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
@@ -174,7 +174,7 @@ module "replica" {
   access_tags = var.access_tags
   name        = "${var.prefix}-replica"
   zone        = "${var.region}-2"
-  id          = module.file_storage.file_share.id
+  source_crn  = module.file_storage.file_share.crn
   iops        = module.file_storage.file_share.iops
   cron_spec   = "0 */5 * * *"
   vpc_mount_targets = {

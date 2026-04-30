@@ -26,7 +26,7 @@ variable "access_tags" {
 ##############################################################################
 
 variable "name" {
-  description = "The unique name for this file storage for vpc instance."
+  description = "The unique name used to identify the file storage for vpc instance."
   type        = string
   default     = "share"
 }
@@ -37,6 +37,7 @@ variable "zone" {
   default     = null
 }
 
+# `rfs` profile currently has limited/select availability and isn’t supported by this module yet. Track progress for adding `rfs` support here: https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/issues/5
 variable "profile" {
   type        = string
   description = "Storage profile with which the file storage instance will be created. [learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)"
@@ -78,36 +79,8 @@ variable "cron_spec" {
   }
 }
 
-variable "source_id" {
-  description = "The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica."
-  type        = string
-  default     = null
-
-
-  validation {
-    condition = (
-      (
-        ((var.source_id != null && trimspace(var.source_id) != "") ? 1 : 0) +
-        ((var.source_crn != null && trimspace(var.source_crn) != "") ? 1 : 0)
-      ) == 1
-    )
-    error_message = "Exactly one of `source_id` or `source_crn` must be set ."
-  }
-
-  validation {
-    condition = (
-      var.cross_regional_replica == false ||
-      (
-        (var.source_id == null || trimspace(var.source_id) == "") &&
-        (var.source_crn != null && trimspace(var.source_crn) != "")
-      )
-    )
-    error_message = "When cross_regional_replica is true, you must set source_crn and must not set source_id."
-  }
-}
-
 variable "source_crn" {
-  description = "The CRN of the source file share. The specified file share must not already have a replica, and must not be a replica. Note for cross regional replica only CRN should be set [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-create-replication&interface=terraform)"
+  description = "The Cloud Resource Name (CRN) of the source file share. The specified file share must not already have a replica, and must not be a replica. Note for cross regional replica only CRN should be set [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-create-replication&interface=terraform)"
   type        = string
   default     = null
 }

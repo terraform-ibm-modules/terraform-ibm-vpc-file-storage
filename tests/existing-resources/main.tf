@@ -252,7 +252,7 @@ module "file_storage" {
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
   # source                            = "terraform-ibm-modules/vpc-file-storage/ibm/"
   # version                           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name                     = "${var.prefix}-adv-share"
+  name                     = "${var.prefix}-share"
   resource_group_id        = module.resource_group.resource_group_id
   tags                     = var.resource_tags
   access_tags              = var.access_tags
@@ -261,7 +261,7 @@ module "file_storage" {
   zone                     = "${var.region}-1"
   initial_owner_gid        = 100
   initial_owner_uid        = 10000
-  allowed_access_protocols = ["nfs4"]
+  allowed_access_protocols = "nfs4"
   sg_mount_targets = {
     "primary" = {
       name               = "${var.prefix}-sg-target"

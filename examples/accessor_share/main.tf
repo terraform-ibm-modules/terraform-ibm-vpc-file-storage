@@ -89,5 +89,5 @@ module "accessor" {
   access_tags = var.access_tags
   mode        = "accessor"
   name        = "${var.prefix}-aces-bind"
-  crn         = var.existing_fileshare_crn
+  source_crn  = var.existing_fileshare_crn
 }

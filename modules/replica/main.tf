@@ -12,7 +12,6 @@ resource "ibm_is_share" "replica" {
   tags                  = var.tags
   access_tags           = var.access_tags
   replication_cron_spec = var.cron_spec
-  source_share          = var.source_id
   source_share_crn      = var.source_crn
 }
 

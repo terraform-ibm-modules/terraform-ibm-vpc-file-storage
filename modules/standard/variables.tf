@@ -3,7 +3,7 @@
 ##############################################################################
 
 variable "resource_group_id" {
-  description = "ID of resource group to provision file storage."
+  description = "The ID of the IBM Cloud resource group where the file storage instance will be provisioned."
   type        = string
   default     = null
 }
@@ -32,21 +32,21 @@ variable "access_tags" {
 ##############################################################################
 
 variable "name" {
-  description = "The unique name for this file storage for vpc instance."
+  description = "The unique name used to identify the file storage for vpc instance."
   type        = string
   default     = "share"
 }
 
 variable "zone" {
-  description = "Zone where the file share will be created, To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list)."
+  description = "The specific availability zone (e.g., us-south-1) where the file share resides. To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list)."
   type        = string
   default     = null
 }
 
 variable "allowed_access_protocols" {
-  description = "List of allowed access protocols for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
-  type        = list(string)
-  default     = ["nfs4"]
+  description = "Allowed access protocol for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
+  type        = string
+  default     = "nfs4"
 }
 
 variable "access_control_mode" {
@@ -55,6 +55,7 @@ variable "access_control_mode" {
   default     = null
 }
 
+# `rfs` profile currently has limited/select availability and isn’t supported by this module yet. Track progress for adding `rfs` support here: https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/issues/5
 variable "profile" {
   type        = string
   description = "Storage profile with which the file storage instance will be created. [learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)."

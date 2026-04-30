@@ -23,9 +23,9 @@ module "restored_file_storage" {
   name                     = "${var.prefix}-restored"
   tags                     = var.resource_tags
   access_tags              = var.access_tags
-  allowed_access_protocols = ["nfs4"]
+  allowed_access_protocols = "nfs4"
   resource_group_id        = module.resource_group.resource_group_id
-  crn                      = var.existing_fileshare_crn
+  source_crn               = var.existing_fileshare_crn
   size                     = 10
   iops                     = 100
   initial_owner_gid        = 100

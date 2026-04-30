@@ -3,7 +3,7 @@
 ##############################################################################
 
 variable "resource_group_id" {
-  description = "ID of resource group to provision file storage."
+  description = "The ID of the IBM Cloud resource group where the file storage instance will be provisioned."
   type        = string
   default     = null
 }
@@ -32,11 +32,12 @@ variable "access_tags" {
 ##############################################################################
 
 variable "name" {
-  description = "The unique name for this restored file storage instance."
+  description = "The unique name used to identify the file storage for vpc instance."
   type        = string
   default     = "share"
 }
 
+# `rfs` profile currently has limited/select availability and isn’t supported by this module yet. Track progress for adding `rfs` support here: https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/issues/5
 variable "profile" {
   type        = string
   description = "Storage profile with which the file storage instance will be created. [learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)"
@@ -50,9 +51,9 @@ variable "profile" {
 }
 
 variable "allowed_access_protocols" {
-  description = "List of allowed access protocols for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
-  type        = list(string)
-  default     = ["nfs4"]
+  description = "Allowed access protocol for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
+  type        = string
+  default     = "nfs4"
 }
 
 variable "size" {
@@ -89,25 +90,8 @@ variable "initial_owner_gid" {
   }
 }
 
-variable "source_id" {
-  description = "Source file share ID used to look up or create the snapshot by name."
-  type        = string
-  default     = null
-
-
-  validation {
-    condition = (
-      (
-        ((var.source_id != null && trimspace(var.source_id) != "") ? 1 : 0) +
-        ((var.source_crn != null && trimspace(var.source_crn) != "") ? 1 : 0)
-      ) == 1
-    )
-    error_message = "Exactly one of `source_id` or `source_crn` must be set ."
-  }
-}
-
 variable "source_crn" {
-  description = "Source file share CRN used to look up or create the snapshot by name."
+  description = "The Cloud Resource Name (CRN) of the source file share this source file share CRN is used to look up or create the snapshot by name."
   type        = string
   default     = null
 }
@@ -138,21 +122,6 @@ variable "snapshot_restore" {
       )
     )
     error_message = "In snapshot_restore, set exactly one of snapshot_id, snapshot_crn, or snapshot_name."
-  }
-
-  validation {
-    condition = (
-      var.snapshot_restore == null ||
-      !(try(var.snapshot_restore.snapshot_name, null) != null &&
-      trimspace(try(var.snapshot_restore.snapshot_name, "")) != "") ||
-      (
-        (
-          ((var.source_id != null && trimspace(var.source_id) != "") ? 1 : 0) +
-          ((var.source_crn != null && trimspace(var.source_crn) != "") ? 1 : 0)
-        ) == 1
-      )
-    )
-    error_message = "When snapshot_restore.snapshot_name is set, you must also set exactly one of `source_id` or `source_crn` to identify the source file share."
   }
 }
 

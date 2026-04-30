@@ -3,7 +3,7 @@
 ##############################################################################
 
 variable "resource_group_id" {
-  description = "ID of resource group to provision file storage."
+  description = "The ID of the IBM Cloud resource group where the file storage instance will be provisioned."
   type        = string
   default     = null
 
@@ -13,7 +13,7 @@ variable "resource_group_id" {
       ? true
       : (var.resource_group_id == null || trimspace(var.resource_group_id) == "")
     )
-    error_message = "resource_group_id Can be set only when mode is 'standard' or 'snapshot_restore'."
+    error_message = "resource_group_id Can be set only when mode is 'standard' or 'snapshot_restore' for other modes, the resource group is inherited or managed by the source."
   }
 }
 
@@ -42,10 +42,10 @@ variable "access_tags" {
 variable "mode" {
   description = <<-EOT
     Determines which type of file share to create:
-      - standard         : create a new empty file share in a zone
-      - snapshot_restore : create a file share cloned from a snapshot
-      - accessor         : create a cross-account accessor share binding of an existing file share
-      - replica          : create a replica share of an existing file share
+      - standard         : Provisions a brand-new, empty file share in a specific zone.
+      - snapshot_restore : Provisions a new file share by restoring data from an existing point-in-time snapshot.
+      - accessor         : Creates a cross-account binding (accessor share) to an existing file share, allowing access across different IBM Cloud accounts.
+      - replica          : Creates a read-only copy of an existing file share for disaster recovery or data distribution purposes.
   EOT
   type        = string
   default     = "standard"
@@ -55,43 +55,25 @@ variable "mode" {
   }
 }
 
-variable "id" {
-  description = "The ID of the source file share (required for non-standard modes; set exactly one of id or crn)."
+variable "source_crn" {
+  description = "The Cloud Resource Name (CRN) of the source file share. This is mandatory for 'snapshot_restore', 'accessor', and 'replica' modes to identify the parent or reference share. It must be null when creating a 'standard' share."
   type        = string
   default     = null
 
   validation {
-    condition = (
-      var.mode == "standard"
-      ? (
-        (var.id == null || trimspace(var.id) == "") &&
-        (var.crn == null || trimspace(var.crn) == "")
-      )
-      : (
-        (
-          ((var.id != null && trimspace(var.id) != "") ? 1 : 0) +
-          ((var.crn != null && trimspace(var.crn) != "") ? 1 : 0)
-        ) == 1
-      )
-    )
-    error_message = "When mode is `standard`, id/crn must be null/empty; otherwise exactly one of `id` or `crn` must be set ."
+    condition     = !(var.mode == "standard" && var.source_crn != null && trim(var.source_crn) != "")
+    error_message = "source_crn must not be set when mode is 'standard'."
   }
 }
 
-variable "crn" {
-  description = "The CRN of the source file share (required for non-standard modes; set exactly one of id or crn)."
-  type        = string
-  default     = null
-}
-
 variable "name" {
-  description = "The unique name for this file storage for vpc instance."
+  description = "The unique name used to identify the file storage for vpc instance."
   type        = string
   default     = "share"
 }
 
 variable "zone" {
-  description = "Zone where the file share will be created. To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list)."
+  description = "The specific availability zone (e.g., us-south-1) where the file share resides. To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list)."
   type        = string
   default     = null
 
@@ -105,6 +87,7 @@ variable "zone" {
   }
 }
 
+# `rfs` profile currently has limited/select availability and isn’t supported by this module yet. Track progress for adding `rfs` support here: https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/issues/5
 variable "profile" {
   type        = string
   description = "Storage profile with which the file storage instance will be created. [know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui)"
@@ -117,22 +100,23 @@ variable "profile" {
 }
 
 variable "allowed_access_protocols" {
-  description = "List of allowed access protocols for the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
-  type        = list(string)
-  default     = []
+  description = "Allowed network file access protocol used the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
+  type        = string
+  default     = ""
 
   validation {
     condition = (
       contains(["standard", "snapshot_restore"], var.mode)
       ? true
-      : length(var.allowed_access_protocols) == 0
+      : var.allowed_access_protocols == ""
     )
-    error_message = "allowed_access_protocols Can be set only when mode is `standard` or `snapshot_restore`. For other modes, set it to an empty list ([])."
+    error_message = "allowed_access_protocols can be set only when mode is `standard` or `snapshot_restore`. For other modes, set it to an empty string ('')."
   }
+
 }
 
 variable "size" {
-  description = "File share size (capacity) in GB for this file storage for vpc instance. refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview)."
+  description = "File share size (capacity) in GB for this file storage for vpc instance. Size requirements vary based on the selected profile refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-profiles&interface=ui#file-storage-profile-overview)."
   type        = number
   default     = null
   # Value validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.

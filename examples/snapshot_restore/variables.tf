@@ -1,6 +1,6 @@
 variable "ibmcloud_api_key" {
   type        = string
-  description = "The IBM Cloud API Key required for authentication and provisioning resources. This is sensitive information and should be kept secure."
+  description = "The IBM Cloud API Key required for authentication and provisioning the file storage instance and other resources. This is sensitive information and should be kept secure."
   sensitive   = true
 }
 
@@ -35,7 +35,7 @@ variable "prefix" {
 }
 
 variable "existing_fileshare_crn" {
-  description = "The existing CRN of a file storage instance"
+  description = " The Cloud Resource Name (CRN) of an existing file share instance this file share CRN is used to look up or create the snapshot by name."
   type        = string
   default     = null
 }

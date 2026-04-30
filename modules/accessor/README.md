@@ -49,9 +49,8 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial). | `list(string)` | `[]` | no |
-| <a name="input_name"></a> [name](#input\_name) | The unique name for this restored file storage instance. | `string` | `"share"` | no |
-| <a name="input_source_crn"></a> [source\_crn](#input\_source\_crn) | Source file share CRN used to look up or create the snapshot by name. | `string` | `null` | no |
-| <a name="input_source_id"></a> [source\_id](#input\_source\_id) | Source file share ID used to look up or create the snapshot by name. | `string` | `null` | no |
+| <a name="input_name"></a> [name](#input\_name) | The unique name used to identify the file storage for vpc instance. | `string` | `"share"` | no |
+| <a name="input_source_crn"></a> [source\_crn](#input\_source\_crn) | The Cloud Resource Name (CRN) of the source file share this source file share CRN is used to identify the cross account file share instance of which the binding needs to be created in the accessor account. | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | List of tags to apply to resources created by this module. | `list(string)` | `[]` | no |
 
 ### Outputs

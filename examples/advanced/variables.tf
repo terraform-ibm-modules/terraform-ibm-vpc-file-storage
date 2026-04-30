@@ -4,7 +4,7 @@
 
 variable "ibmcloud_api_key" {
   type        = string
-  description = "The IBM Cloud API Key."
+  description = "The IBM Cloud API Key required for authentication and provisioning the file storage instance and other resources. This is sensitive information and should be kept secure."
   sensitive   = true
 }
 
@@ -57,7 +57,7 @@ variable "skip_iam_share_authorization_policy" {
 }
 
 variable "kms_encryption_enabled" {
-  description = "Enable Key management , if set to `false` IBM-managed keys are used by default."
+  description = "Whether to use key management service key encryption to encrypt data in File storage instance  , if set to `false` IBM-managed keys are used by default."
   type        = bool
   default     = false
 

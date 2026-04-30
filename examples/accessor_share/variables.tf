@@ -1,12 +1,12 @@
 variable "ibmcloud_api_key" {
   type        = string
-  description = "The IBM Cloud API Key required for authentication and provisioning resources. This is sensitive information and should be kept secure."
+  description = "The IBM Cloud API Key required for authentication and provisioning the file storage instance and other resources. This is sensitive information and should be kept secure."
   sensitive   = true
 }
 
 variable "ibmcloud_accessor_api_key" {
   type        = string
-  description = "The accessor account IBM Cloud API Key required for authentication and provisioning resources. This is sensitive information and should be kept secure."
+  description = "The accessor account IBM Cloud API Key required for authentication and provisioning the accessor binding of source file storage and other resources. This is sensitive information and should be kept secure."
   sensitive   = true
 }
 
@@ -41,7 +41,7 @@ variable "prefix" {
 }
 
 variable "existing_fileshare_crn" {
-  description = "The existing CRN of a file storage instance"
+  description = "The Cloud Resource Name (CRN) of an existing file share instance this source file share CRN is used to identify the cross account file share instance of which the binding needs to be created in the accessor account. Note: accessor bindings are only supported by file storage instance with `security_group' access_control_mode"
   type        = string
   default     = null
 }

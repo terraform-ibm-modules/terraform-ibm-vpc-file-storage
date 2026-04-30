@@ -34,8 +34,7 @@ module "replica" {
   tags                   = var.tags
   access_tags            = var.access_tags
   cron_spec              = var.cron_spec
-  source_id              = var.id
-  source_crn             = var.crn
+  source_crn             = var.source_crn
 }
 
 module "snapshot_restore" {
@@ -54,8 +53,7 @@ module "snapshot_restore" {
   initial_owner_gid                   = var.initial_owner_gid
   initial_owner_uid                   = var.initial_owner_uid
   snapshot_restore                    = var.snapshot_restore
-  source_crn                          = var.crn
-  source_id                           = var.id
+  source_crn                          = var.source_crn
   allowed_access_protocols            = var.allowed_access_protocols
 }
 
@@ -65,8 +63,7 @@ module "accessor" {
   name        = var.name
   tags        = var.tags
   access_tags = var.access_tags
-  source_crn  = var.crn
-  source_id   = var.id
+  source_crn  = var.source_crn
 }
 
 ##############################################################################

@@ -8,7 +8,7 @@ locals {
   use_snapshot_crn  = var.snapshot_restore != null && try(var.snapshot_restore.snapshot_crn, null) != null
 
   create_if_missing = local.use_snapshot_name && try(var.snapshot_restore.create_snapshot_if_missing, false)
-  source_share_id   = var.source_id != null ? var.source_id : module.share_crn_parser[0].resource
+  source_share_id   = module.share_crn_parser[0].resource
 }
 
 module "share_crn_parser" {
@@ -86,7 +86,7 @@ resource "ibm_is_share" "restored_file_storage" {
   encryption_key           = var.kms_encryption_enabled ? var.kms_key_crn : null
   tags                     = var.tags
   access_tags              = var.access_tags
-  allowed_access_protocols = var.allowed_access_protocols
+  allowed_access_protocols = [var.allowed_access_protocols]
 
   dynamic "initial_owner" {
     for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) ? [1] : []

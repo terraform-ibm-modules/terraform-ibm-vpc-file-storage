@@ -15,7 +15,7 @@ resource "ibm_is_share" "share" {
   access_tags                      = var.access_tags
   allowed_transit_encryption_modes = var.access_control_mode == "security_group" ? ["ipsec", "none"] : null
   access_control_mode              = var.access_control_mode
-  allowed_access_protocols         = var.allowed_access_protocols
+  allowed_access_protocols         = [var.allowed_access_protocols]
   dynamic "initial_owner" {
     for_each = (var.initial_owner_uid != null || var.initial_owner_gid != null) ? [1] : []
     content {
