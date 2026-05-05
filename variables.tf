@@ -56,13 +56,22 @@ variable "mode" {
 }
 
 variable "source_crn" {
-  description = "The Cloud Resource Name (CRN) of the source file share. This is mandatory for 'snapshot_restore', 'accessor', and 'replica' modes to identify the parent or reference share. It must be null when creating a 'standard' share."
+  description = "The Cloud Resource Name (CRN) of the source file share. This is mandatory for 'accessor', and 'replica' modes to identify the parent or reference share. It must be null when creating a 'standard' share."
   type        = string
   default     = null
 
   validation {
-    condition     = !(var.mode == "standard" && var.source_crn != null && trim(var.source_crn) != "")
+    condition     = !(var.mode == "standard" && var.source_crn != null && trimspace(var.source_crn) != "")
     error_message = "source_crn must not be set when mode is 'standard'."
+  }
+
+  validation {
+    condition = (
+      contains(["accessor", "replica"], var.mode)
+      ? (var.source_crn != null && trimspace(var.source_crn) != "")
+      : true
+    )
+    error_message = "source_crn must be set when mode is 'accessor' or 'replica'."
   }
 }
 
@@ -102,15 +111,15 @@ variable "profile" {
 variable "allowed_access_protocols" {
   description = "Allowed network file access protocol used the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share)"
   type        = string
-  default     = ""
+  default     = null
 
   validation {
     condition = (
       contains(["standard", "snapshot_restore"], var.mode)
       ? true
-      : var.allowed_access_protocols == ""
+      : var.allowed_access_protocols == null
     )
-    error_message = "allowed_access_protocols can be set only when mode is `standard` or `snapshot_restore`. For other modes, set it to an empty string ('')."
+    error_message = "allowed_access_protocols can be set only when mode is `standard` or `snapshot_restore`. For other modes, set it to null."
   }
 
 }

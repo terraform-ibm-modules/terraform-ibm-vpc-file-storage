@@ -123,6 +123,22 @@ variable "snapshot_restore" {
     )
     error_message = "In snapshot_restore, set exactly one of snapshot_id, snapshot_crn, or snapshot_name."
   }
+
+  validation {
+    condition = (
+      var.snapshot_restore == null
+      ? true
+      : (
+        (try(var.snapshot_restore.snapshot_name, null) != null &&
+        trimspace(try(var.snapshot_restore.snapshot_name, "")) != "")
+        ? (
+          var.source_crn != null && trimspace(var.source_crn) != ""
+        )
+        : true
+      )
+    )
+    error_message = "source_crn must be set when snapshot_restore.snapshot_name is set."
+  }
 }
 
 ##############################################################################
