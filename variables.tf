@@ -13,7 +13,7 @@ variable "resource_group_id" {
       ? true
       : (var.resource_group_id == null || trimspace(var.resource_group_id) == "")
     )
-    error_message = "resource_group_id Can be set only when mode is 'standard' or 'snapshot_restore' for other modes, the resource group is inherited or managed by the source."
+    error_message = "'resource_group_id' can be set only when mode is 'standard' or 'snapshot_restore' for other modes, the resource group is inherited or managed by the source."
   }
 }
 
