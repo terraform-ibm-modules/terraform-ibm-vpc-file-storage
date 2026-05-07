@@ -114,7 +114,7 @@ resource "ibm_is_share_mount_target" "mount_targets" {
       id = each.value.vni_id
 
       # If creating VNI
-      name = each.value.vni_id == null ? format("%s-fs-vni-%s", var.name, each.key) : null
+      name = each.value.vni_id == null ? var.name : null
 
       subnet          = each.value.vni_id == null ? each.value.subnet_id : null
       resource_group  = each.value.vni_id == null ? each.value.resource_group_id : null

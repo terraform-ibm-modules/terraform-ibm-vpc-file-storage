@@ -20,9 +20,7 @@ module "share_crn_parser" {
   crn     = var.existing_fileshare_crn
 }
 
-data "ibm_iam_account_settings" "origin" {
-  provider = ibm
-}
+data "ibm_iam_account_settings" "origin" {}
 
 data "ibm_iam_account_settings" "accessor" {
   provider = ibm.accessor

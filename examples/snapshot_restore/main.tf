@@ -15,11 +15,10 @@ module "resource_group" {
 #############################################################################
 
 module "restored_file_storage" {
-  source = "../../"
+  source = "../../modules/snapshot_restore"
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
-  # source                 = "terraform-ibm-modules/vpc-file-storage/ibm/"
+  # source                 = "terraform-ibm-modules/vpc-file-storage/ibm//modules/snapshot_restore"
   # version                = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  mode                     = "snapshot_restore"
   name                     = "${var.prefix}-restored"
   tags                     = var.resource_tags
   access_tags              = var.access_tags
