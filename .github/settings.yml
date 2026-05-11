@@ -13,16 +13,8 @@ repository:
   # See https://terraform-ibm-modules.github.io/documentation/#/implementation-guidelines?id=module-names-and-descriptions
 
   # By changing this field, you rename the repository.
+  name: "terraform-ibm-vpc-file-storage"
 
-  # Uncomment this name property and set the name to the current repo name.
-  # name: ""
+  description: "This module creates a File Storage for VPC instance"
 
-  # The description is displayed under the repository name on the
-  # organization page and in the 'About' section of the repository.
-
-  # Uncomment this description property
-  # and update the description to the current repo description.
-  # description: ""
-
-  # Use a comma-separated list of topics to set on the repo (ensure not to use any caps in the topic string).
-  topics: terraform, ibm-cloud, terraform-module
+  topics: terraform, ibm-cloud, terraform-module, core-team , file-storage , file-storage-vpc
