@@ -140,6 +140,8 @@ locals {
   create_auth_policy = var.kms_encryption_enabled && !var.skip_iam_share_authorization_policy
 }
 
+# NOTE: The below auth policy cannot be scoped to a source resource group due to
+# the fact that the File storage does not yet exist in the resource group.
 resource "ibm_iam_authorization_policy" "file_share_policy" {
   count                = local.create_auth_policy ? 1 : 0
   source_service_name  = "is"
