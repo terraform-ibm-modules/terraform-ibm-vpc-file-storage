@@ -55,8 +55,6 @@ func TestRunBasicExample(t *testing.T) {
 
 	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueId()))
 	options := setupOptions(t, Prefix, basicExampleDir)
-	options.TerraformVars["kms_encryption_enabled"] = true
-	options.TerraformVars["kms_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -68,8 +66,6 @@ func TestRunUpgradeBasicExample(t *testing.T) {
 
 	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueId()))
 	options := setupOptions(t, Prefix, basicExampleDir)
-	options.TerraformVars["kms_encryption_enabled"] = true
-	options.TerraformVars["kms_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
@@ -93,6 +89,9 @@ func TestRunUpgradeAdvancedExample(t *testing.T) {
 
 	Prefix := fmt.Sprintf("adv-upg-%s", strings.ToLower(random.UniqueId()))
 	options := setupOptions(t, Prefix, advancedExampleDir)
+
+	options.TerraformVars["kms_encryption_enabled"] = true
+	options.TerraformVars["kms_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
