@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -53,7 +54,7 @@ func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptio
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
-	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueId()))
+	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueID()))
 	options := setupOptions(t, Prefix, basicExampleDir)
 
 	output, err := options.RunTestConsistency()
@@ -64,7 +65,7 @@ func TestRunBasicExample(t *testing.T) {
 func TestRunUpgradeBasicExample(t *testing.T) {
 	t.Parallel()
 
-	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueId()))
+	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueID()))
 	options := setupOptions(t, Prefix, basicExampleDir)
 
 	output, err := options.RunTestUpgrade()
@@ -76,7 +77,7 @@ func TestRunUpgradeBasicExample(t *testing.T) {
 
 func TestRunAdvancedExample(t *testing.T) {
 	t.Parallel()
-	Prefix := fmt.Sprintf("adv-%s", strings.ToLower(random.UniqueId()))
+	Prefix := fmt.Sprintf("adv-%s", strings.ToLower(random.UniqueID()))
 	options := setupOptions(t, Prefix, advancedExampleDir)
 
 	output, err := options.RunTestConsistency()
@@ -87,7 +88,7 @@ func TestRunAdvancedExample(t *testing.T) {
 func TestRunUpgradeAdvancedExample(t *testing.T) {
 	t.Parallel()
 
-	Prefix := fmt.Sprintf("adv-upg-%s", strings.ToLower(random.UniqueId()))
+	Prefix := fmt.Sprintf("adv-upg-%s", strings.ToLower(random.UniqueID()))
 	options := setupOptions(t, Prefix, advancedExampleDir)
 
 	options.TerraformVars["kms_encryption_enabled"] = true
@@ -104,9 +105,9 @@ func provisionPreReq(t *testing.T) (string, *terraform.Options, error) {
 	// ------------------------------------------------------------------------------------
 	// Provision existing resources first
 	// ------------------------------------------------------------------------------------
-	prefix := fmt.Sprintf("%s-t-%s", "fs", strings.ToLower(random.UniqueId()))
+	prefix := fmt.Sprintf("%s-t-%s", "fs", strings.ToLower(random.UniqueID()))
 	realTerraformDir := ".."
-	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
+	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueID())))
 	tags := common.GetTagsFromTravis()
 
 	// Verify ibmcloud_api_key variable is set
@@ -127,9 +128,9 @@ func provisionPreReq(t *testing.T) (string, *terraform.Options, error) {
 		Upgrade: true,
 	})
 
-	terraform.Init(t, existingTerraformOptions)
-	terraform.WorkspaceSelectOrNew(t, existingTerraformOptions, prefix)
-	_, existErr := terraform.InitAndApplyE(t, existingTerraformOptions)
+	terraform.InitContext(t, context.Background(), existingTerraformOptions)
+	terraform.WorkspaceSelectOrNewContext(t, context.Background(), existingTerraformOptions, prefix)
+	_, existErr := terraform.InitAndApplyContextE(t, context.Background(), existingTerraformOptions)
 	if existErr != nil {
 		// assert.True(t, existErr == nil, "Init and Apply of temp existing resource failed")
 		return "", nil, existErr
@@ -145,11 +146,11 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 		assert.True(t, existErr == nil, "Init and Apply of temp existing resource failed")
 	} else {
 
-		fileShareCrn := terraform.Output(t, existingTerraformOptions, "file_share_crn")
+		fileShareCrn := terraform.OutputContext(t, context.Background(), existingTerraformOptions, "file_share_crn")
 
 		logger.Log(t, "source file_share_crn: ", fileShareCrn)
 
-		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueId()))
+		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueID()))
 		options := setupOptions(t, snapPrefix, snapshotRestoreExampleDir)
 		options.TerraformVars["existing_fileshare_crn"] = fileShareCrn
 
@@ -170,8 +171,8 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 		fmt.Println("Terratest failed. Debug the test and delete resources manually.")
 	} else {
 		logger.Log(t, "START: Destroy (existing resources)")
-		terraform.Destroy(t, existingTerraformOptions)
-		terraform.WorkspaceDelete(t, existingTerraformOptions, prefix)
+		terraform.DestroyContext(t, context.Background(), existingTerraformOptions)
+		terraform.WorkspaceDeleteContext(t, context.Background(), existingTerraformOptions, prefix)
 		logger.Log(t, "END: Destroy (existing resources)")
 	}
 }
@@ -184,11 +185,11 @@ func TestRunUpgradeSnapshotRestoreExample(t *testing.T) {
 		assert.True(t, existErr == nil, "Init and Apply of temp existing resource failed")
 	} else {
 
-		fileShareCrn := terraform.Output(t, existingTerraformOptions, "file_share_crn")
+		fileShareCrn := terraform.OutputContext(t, context.Background(), existingTerraformOptions, "file_share_crn")
 
 		logger.Log(t, "source file_share_crn: ", fileShareCrn)
 
-		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueId()))
+		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueID()))
 		options := setupOptions(t, snapPrefix, snapshotRestoreExampleDir)
 		options.TerraformVars["existing_fileshare_crn"] = fileShareCrn
 
@@ -211,8 +212,8 @@ func TestRunUpgradeSnapshotRestoreExample(t *testing.T) {
 		fmt.Println("Terratest failed. Debug the test and delete resources manually.")
 	} else {
 		logger.Log(t, "START: Destroy (existing resources)")
-		terraform.Destroy(t, existingTerraformOptions)
-		terraform.WorkspaceDelete(t, existingTerraformOptions, prefix)
+		terraform.DestroyContext(t, context.Background(), existingTerraformOptions)
+		terraform.WorkspaceDeleteContext(t, context.Background(), existingTerraformOptions, prefix)
 		logger.Log(t, "END: Destroy (existing resources)")
 	}
 }
