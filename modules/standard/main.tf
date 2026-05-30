@@ -32,7 +32,7 @@ resource "ibm_is_share" "share" {
 module "existing_kms_key_crn_parser" {
   count   = local.create_auth_policy ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.5.0"
+  version = "1.6.1"
   crn     = var.kms_key_crn
 }
 

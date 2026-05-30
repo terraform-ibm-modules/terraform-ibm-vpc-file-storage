@@ -24,7 +24,7 @@ data "ibm_iam_account_settings" "origin" {}
 module "share_crn_parser" {
   count   = var.cross_regional_replica ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.5.0"
+  version = "1.6.1"
   crn     = var.source_crn
 }
 
