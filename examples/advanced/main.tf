@@ -227,7 +227,7 @@ module "vsi_image_selector" {
 
 module "vsi" {
   source                = "terraform-ibm-modules/landing-zone-vsi/ibm"
-  version               = "6.5.1"
+  version               = "6.5.5"
   resource_group_id     = module.resource_group.resource_group_id
   image_id              = module.vsi_image_selector.latest_image_id
   tags                  = var.resource_tags
