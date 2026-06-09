@@ -17,30 +17,30 @@ Use this module to provision and configure an IBM [File Storage for VPC](https:/
 ## Overview
 <ul>
   <li><a href="#terraform-ibm-vpc-file-storage">terraform-ibm-vpc-file-storage</a></li>
-  <li><a href="./modules">Submodules</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/modules">Submodules</a>
     <ul>
-      <li><a href="./modules/accessor">accessor</a></li>
-      <li><a href="./modules/replica">replica</a></li>
-      <li><a href="./modules/snapshot_restore">snapshot_restore</a></li>
-      <li><a href="./modules/standard">standard</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/modules/accessor">accessor</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/modules/replica">replica</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/modules/snapshot_restore">snapshot_restore</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/modules/standard">standard</a></li>
     </ul>
   </li>
-  <li><a href="./examples">Examples</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples">Examples</a>
     <ul>
       <li>
-        <a href="./examples/accessor_share">Accessor share example</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/accessor_share">Accessor share example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=vpc-file-storage-accessor_share-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/accessor_share"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/advanced">Advanced example</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/advanced">Advanced example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=vpc-file-storage-advanced-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/advanced"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/basic">Basic example</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/basic">Basic example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=vpc-file-storage-basic-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/basic"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/snapshot_restore">Snapshot restore example</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/snapshot_restore">Snapshot restore example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=vpc-file-storage-snapshot_restore-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/snapshot_restore"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
     </ul>
