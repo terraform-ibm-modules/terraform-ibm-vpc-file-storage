@@ -191,7 +191,7 @@ resource "ibm_is_ssh_key" "ssh_key" {
 
 module "vpc" {
   source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
-  version           = "9.0.7"
+  version           = "9.1.0"
   resource_group_id = module.resource_group.resource_group_id
   region            = var.region
   prefix            = var.prefix
@@ -216,7 +216,7 @@ module "vpc" {
 
 module "vsi_image_selector" {
   source           = "terraform-ibm-modules/common-utilities/ibm//modules/vsi-image-selector"
-  version          = "1.6.1"
+  version          = "1.9.0"
   architecture     = "amd64"
   operating_system = "ubuntu"
 }
@@ -227,7 +227,7 @@ module "vsi_image_selector" {
 
 module "vsi" {
   source                = "terraform-ibm-modules/landing-zone-vsi/ibm"
-  version               = "6.5.5"
+  version               = "6.6.0"
   resource_group_id     = module.resource_group.resource_group_id
   image_id              = module.vsi_image_selector.latest_image_id
   tags                  = var.resource_tags
