@@ -195,7 +195,7 @@ module "vpc" {
   resource_group_id = module.resource_group.resource_group_id
   region            = var.region
   prefix            = var.prefix
-  tags              = var.resource_tags
+  resource_tags     = var.resource_tags
   subnets = {
     zone-1 = [
       {
@@ -230,7 +230,7 @@ module "vsi" {
   version               = "6.6.0"
   resource_group_id     = module.resource_group.resource_group_id
   image_id              = module.vsi_image_selector.latest_image_id
-  tags                  = var.resource_tags
+  resource_tags         = var.resource_tags
   access_tags           = var.access_tags
   subnets               = module.vpc.subnet_zone_list
   vpc_id                = module.vpc.vpc_id
