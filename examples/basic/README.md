@@ -18,5 +18,5 @@ The text below should describe exactly what resources are provisioned / configur
 An end-to-end basic example that will provision the following:
 - A new resource group if one is not passed in.
 - A new VPC with 1 subnet
-- A file Storage instance with VPC access control mode and an VPC mount target
-- A replica of the file storage instance in another availability zone of the same region as the File Storage instance and same VPC mount target
+- A file Storage instance with Security Group access control mode and a security group-based mount target
+- A replica of the file storage instance in another availability zone of the same region as the File Storage instance with a security group-based mount target

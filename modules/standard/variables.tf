@@ -50,9 +50,14 @@ variable "allowed_access_protocols" {
 }
 
 variable "access_control_mode" {
-  description = "Controls how the mount target authorizes access to the file share (security_group for Security Group based access, or vpc for same-zone VPC access).[Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
+  description = "Controls how the mount target authorizes access to the file share. Only 'security_group' is supported (VPC access mode is deprecated).[Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
   type        = string
-  default     = null
+  default     = "security_group"
+
+  validation {
+    condition     = var.access_control_mode == "security_group"
+    error_message = "Only 'security_group' access control mode is supported. VPC access mode is deprecated."
+  }
 }
 
 # `rfs` profile currently has limited/select availability and isn’t supported by this module yet. Track progress for adding `rfs` support here: https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/issues/5

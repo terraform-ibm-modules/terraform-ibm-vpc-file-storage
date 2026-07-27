@@ -191,25 +191,6 @@ variable "initial_owner_gid" {
   }
 }
 
-variable "vpc_mount_targets" {
-  description = "Map of VPC mount targets for the file share . If a value is provided for this the file storage is created with 'vpc' access_control_mode .[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
-  type = map(object({
-    vpc_id = string
-    name   = string
-  }))
-  default = {}
-  validation {
-    condition     = !(length(var.vpc_mount_targets) > 0 && length(var.sg_mount_targets) > 0)
-    error_message = "Only one can be set: vpc_mount_targets or sg_mount_targets."
-  }
-  validation {
-    condition = length(distinct([
-      for _, mt in var.vpc_mount_targets : mt.name
-    ])) == length(var.vpc_mount_targets)
-    error_message = "Within vpc_mount_targets, 'name' must be unique for each entry."
-  }
-}
-
 variable "sg_mount_targets" {
   description = "Map of Security-group based mount targets for the file share. If a value is provided for this the file storage is created with 'security_group' access_control_mode .[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode)."
   type = map(object({

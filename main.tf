@@ -16,7 +16,7 @@ module "standard" {
   kms_key_crn                         = var.kms_key_crn
   tags                                = var.tags
   access_tags                         = var.access_tags
-  access_control_mode                 = length(var.sg_mount_targets) > 0 ? "security_group" : "vpc"
+  access_control_mode                 = "security_group"
   initial_owner_gid                   = var.initial_owner_gid
   initial_owner_uid                   = var.initial_owner_uid
   allowed_access_protocols            = var.allowed_access_protocols
@@ -78,37 +78,17 @@ locals {
     var.mode == "snapshot_restore" ? module.snapshot_restore[0].id :
     null
   )
-  mount_targets = merge(
-    {
-      for k, mt in var.vpc_mount_targets :
-      "vpc-${k}" => {
-        type   = "vpc"
-        name   = mt.name
-        vpc_id = mt.vpc_id
-      }
-    },
-    {
-      for k, mt in var.sg_mount_targets :
-      "sg-${k}" => merge(
-        {
-          type = "sg"
-        },
-        mt
-      )
-    }
-  )
 }
 
 resource "ibm_is_share_mount_target" "mount_targets" {
-  for_each           = local.mount_targets
+  for_each           = var.sg_mount_targets
   share              = local.active_share_id
   name               = each.value.name
   access_protocol    = try(each.value.access_protocol, "nfs4")
-  vpc                = each.value.type == "vpc" ? each.value.vpc_id : null
-  transit_encryption = each.value.type == "sg" ? try(each.value.transit_encryption, "none") : null
+  transit_encryption = try(each.value.transit_encryption, "none")
 
   dynamic "virtual_network_interface" {
-    for_each = each.value.type == "sg" ? [1] : []
+    for_each = [1]
     content {
       # If using existing VNI
       id = each.value.vni_id

@@ -117,11 +117,11 @@ locals {
 
 module "vpc" {
   source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
-  version           = "9.0.7"
+  version           = "9.1.0"
   resource_group_id = module.resource_group.resource_group_id
   region            = var.region
   prefix            = var.prefix
-  tags              = var.resource_tags
+  resource_tags     = var.resource_tags
   name              = "vpc"
   subnets = {
     zone-1 = [
@@ -137,7 +137,7 @@ module "vpc" {
 }
 
 #############################################################################
-# Create File Storage with VPC Access control mode
+# Create File Storage with Security Group Access control mode
 #############################################################################
 
 module "file_storage" {
@@ -156,10 +156,10 @@ module "file_storage" {
   kms_encryption_enabled              = var.kms_encryption_enabled
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
   kms_key_crn                         = var.kms_key_crn
-  vpc_mount_targets = {
+  sg_mount_targets = {
     "primary" = {
-      name   = "${var.prefix}-vpc-target"
-      vpc_id = module.vpc.vpc_id
+      name      = "${var.prefix}-sg-target"
+      subnet_id = module.vpc.subnet_ids[0]
     }
   }
 }
@@ -177,10 +177,10 @@ module "replica" {
   source_crn  = module.file_storage.file_share.crn
   iops        = module.file_storage.file_share.iops
   cron_spec   = "0 */5 * * *"
-  vpc_mount_targets = {
+  sg_mount_targets = {
     "primary" = {
-      name   = "${var.prefix}-vpc-target"
-      vpc_id = module.vpc.vpc_id
+      name      = "${var.prefix}-sg-target"
+      subnet_id = module.vpc.subnet_ids[0]
     }
   }
 }
