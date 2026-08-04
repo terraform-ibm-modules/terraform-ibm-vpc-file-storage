@@ -22,7 +22,6 @@ const resourceGroup = "geretain-test-resources"
 const region = "us-south"
 
 const advancedExampleDir = "examples/advanced"
-const basicExampleDir = "examples/basic"
 const snapshotRestoreExampleDir = "examples/snapshot_restore"
 
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
@@ -49,30 +48,6 @@ func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptio
 		ResourceGroup: resourceGroup,
 	})
 	return options
-}
-
-func TestRunBasicExample(t *testing.T) {
-	t.Parallel()
-
-	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueID()))
-	options := setupOptions(t, Prefix, basicExampleDir)
-
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-}
-
-func TestRunUpgradeBasicExample(t *testing.T) {
-	t.Parallel()
-
-	Prefix := fmt.Sprintf("fs-%s", strings.ToLower(random.UniqueID()))
-	options := setupOptions(t, Prefix, basicExampleDir)
-
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
-	}
 }
 
 func TestRunAdvancedExample(t *testing.T) {

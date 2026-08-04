@@ -11,7 +11,7 @@ module "resource_group" {
 }
 
 #############################################################################
-# Create File Storage with VPC Access control mode
+# Create File Storage restored from snapshot
 #############################################################################
 
 module "restored_file_storage" {
@@ -33,4 +33,23 @@ module "restored_file_storage" {
     snapshot_name              = "snap1"
     create_snapshot_if_missing = true
   }
+}
+
+#############################################################################
+# Create replica from restored file storage
+#############################################################################
+
+module "replica" {
+  source = "../../"
+  # remove the above line and uncomment the below 2 lines to consume the module from the registry
+  # source          = "terraform-ibm-modules/vpc-file-storage/ibm/"
+  # version         = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  mode        = "replica"
+  tags        = var.resource_tags
+  access_tags = var.access_tags
+  name        = "${var.prefix}-replica"
+  zone        = "${var.region}-2"
+  source_crn  = module.restored_file_storage.crn
+  iops        = module.restored_file_storage.iops
+  cron_spec   = "0 */5 * * *"
 }
