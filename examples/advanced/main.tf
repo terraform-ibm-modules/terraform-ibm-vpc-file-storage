@@ -266,7 +266,7 @@ module "file_storage" {
   skip_iam_share_authorization_policy = var.skip_iam_share_authorization_policy
   kms_key_crn                         = var.kms_key_crn
   sg_mount_targets = {
-    "primary" = {
+    "sg-primary" = {
       name               = "${var.prefix}-sg-target"
       security_group_ids = [module.vsi.vsi_security_group.id]
       subnet_id          = module.vpc.subnet_ids[0]
