@@ -96,9 +96,10 @@ func provisionPreReq(t *testing.T) (string, *terraform.Options, error) {
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir + "/tests/existing-resources",
 		Vars: map[string]interface{}{
-			"prefix":        prefix,
-			"region":        region,
-			"resource_tags": tags,
+			"prefix":         prefix,
+			"region":         region,
+			"resource_tags":  tags,
+			"resource_group": resourceGroup,
 		},
 		Upgrade: true,
 	})
@@ -128,6 +129,7 @@ func TestRunSnapshotRestoreExample(t *testing.T) {
 		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueID()))
 		options := setupOptions(t, snapPrefix, snapshotRestoreExampleDir)
 		options.TerraformVars["existing_fileshare_crn"] = fileShareCrn
+		options.TerraformVars["resource_group"] = resourceGroup
 
 		output, err := options.RunTestConsistency()
 		assert.Nil(t, err, "This should not have errored")
@@ -167,6 +169,7 @@ func TestRunUpgradeSnapshotRestoreExample(t *testing.T) {
 		snapPrefix := fmt.Sprintf("snap-%s", strings.ToLower(random.UniqueID()))
 		options := setupOptions(t, snapPrefix, snapshotRestoreExampleDir)
 		options.TerraformVars["existing_fileshare_crn"] = fileShareCrn
+		options.TerraformVars["resource_group"] = resourceGroup
 
 		output, err := options.RunTestUpgrade()
 		if !options.UpgradeTestSkipped {
