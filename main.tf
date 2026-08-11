@@ -87,29 +87,26 @@ resource "ibm_is_share_mount_target" "mount_targets" {
   access_protocol    = try(each.value.access_protocol, "nfs4")
   transit_encryption = try(each.value.transit_encryption, "none")
 
-  dynamic "virtual_network_interface" {
-    for_each = [1]
-    content {
-      # If using existing VNI
-      id = each.value.vni_id
+  virtual_network_interface {
+    # If using existing VNI
+    id = each.value.vni_id
 
-      # If creating VNI
-      name = each.value.vni_id == null ? var.name : null
+    # If creating VNI
+    name = each.value.vni_id == null ? var.name : null
 
-      subnet          = each.value.vni_id == null ? each.value.subnet_id : null
-      resource_group  = each.value.vni_id == null ? each.value.resource_group_id : null
-      security_groups = each.value.vni_id == null ? each.value.security_group_ids : null
+    subnet          = each.value.vni_id == null ? each.value.subnet_id : null
+    resource_group  = each.value.vni_id == null ? each.value.resource_group_id : null
+    security_groups = each.value.vni_id == null ? each.value.security_group_ids : null
 
-      protocol_state_filtering_mode = each.value.vni_id == null ? each.value.protocol_state_filtering_mode : null
+    protocol_state_filtering_mode = each.value.vni_id == null ? each.value.protocol_state_filtering_mode : null
 
-      dynamic "primary_ip" {
-        for_each = each.value.vni_id == null && each.value.primary_ip != null ? [1] : []
-        content {
-          reserved_ip = each.value.primary_ip.reserved_ip
-          auto_delete = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.auto_delete : null
-          address     = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.address : null
-          name        = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.name : null
-        }
+    dynamic "primary_ip" {
+      for_each = each.value.vni_id == null && each.value.primary_ip != null ? [1] : []
+      content {
+        reserved_ip = each.value.primary_ip.reserved_ip
+        auto_delete = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.auto_delete : null
+        address     = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.address : null
+        name        = each.value.primary_ip.reserved_ip == null ? each.value.primary_ip.name : null
       }
     }
   }
