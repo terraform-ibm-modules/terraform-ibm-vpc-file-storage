@@ -13,11 +13,6 @@ resource "ibm_is_share" "replica" {
   access_tags           = var.access_tags
   replication_cron_spec = var.cron_spec
   source_share_crn      = var.source_crn
-
-  lifecycle {
-    # Prevent parallel destruction - replica must be destroyed before source share
-    create_before_destroy = false
-  }
 }
 
 ##############################################################################
