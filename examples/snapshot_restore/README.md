@@ -17,5 +17,6 @@ The text below should describe exactly what resources are provisioned / configur
 
 An end-to-end snapshot restore example that will provision the following:
 - A new resource group if one is not passed in.
-- A file Storage instance restored from an snapshot of existing file storage instance
-- A snapshot of existing file storage instance if specified by setting `create_snapshot_if_missing` true
+- A file storage instance restored from a snapshot of an existing file storage instance.
+- A snapshot of the existing file storage instance if `create_snapshot_if_missing` is set to `true`.
+- A replica created from the restored file storage instance.

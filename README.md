@@ -36,10 +36,6 @@ Use this module to provision and configure an IBM [File Storage for VPC](https:/
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=vpc-file-storage-advanced-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/advanced"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/basic">Basic example</a>
-        <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=vpc-file-storage-basic-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/basic"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
-      </li>
-      <li>
         <a href="https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/snapshot_restore">Snapshot restore example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=vpc-file-storage-snapshot_restore-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-vpc-file-storage/tree/main/examples/snapshot_restore"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
@@ -80,10 +76,10 @@ module "file_storage" {
   size                     = 10
   iops                     = 100
   zone                     = "us-south-1"
-  vpc_mount_targets = {
+  sg_mount_targets = {
     "primary" = {
-      name   = "vpc-target"
-      vpc_id =  "79cxxxx-xxxx-xxxx-xxxx-xxxxxXX8667"
+      name      = "sg-target"
+      subnet_id = "79cxxxx-xxxx-xxxx-xxxx-xxxxxXX8667" # Replace with the actual subnet ID
     }
   }
 }
@@ -189,7 +185,6 @@ You need the following permissions to run this module.
 | <a name="input_snapshot_restore"></a> [snapshot\_restore](#input\_snapshot\_restore) | Snapshot restore settings to select the source snapshot by ID/CRN/name and optionally create the snapshot if the snapshot identified by snapshot\_name does not exist before restoring. (used only when mode is 'snapshot\_restore'). | <pre>object({<br/>    snapshot_id                = optional(string)<br/>    snapshot_crn               = optional(string)<br/>    snapshot_name              = optional(string)<br/>    create_snapshot_if_missing = optional(bool, false)<br/>  })</pre> | `null` | no |
 | <a name="input_source_crn"></a> [source\_crn](#input\_source\_crn) | The Cloud Resource Name (CRN) of the source file share. This is mandatory for 'accessor', and 'replica' modes to identify the parent or reference share. It must be null when creating a 'standard' share. | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | List of tags to apply to resources created by this module. | `list(string)` | `[]` | no |
-| <a name="input_vpc_mount_targets"></a> [vpc\_mount\_targets](#input\_vpc\_mount\_targets) | Map of VPC mount targets for the file share . If a value is provided for this the file storage is created with 'vpc' access\_control\_mode .[know more](https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about#fs-mount-access-mode). | <pre>map(object({<br/>    vpc_id = string<br/>    name   = string<br/>  }))</pre> | `{}` | no |
 | <a name="input_zone"></a> [zone](#input\_zone) | The specific availability zone (e.g., us-south-1) where the file share resides. To find zones available for each region refer [here](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-reference&interface=cli#zones-list). | `string` | `null` | no |
 
 ### Outputs
