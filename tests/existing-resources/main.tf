@@ -191,7 +191,7 @@ resource "ibm_is_ssh_key" "ssh_key" {
 
 module "vpc" {
   source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
-  version           = "10.0.0"
+  version           = "10.0.10"
   resource_group_id = module.resource_group.resource_group_id
   region            = var.region
   prefix            = var.prefix
@@ -227,7 +227,7 @@ module "vsi_image_selector" {
 
 module "vsi" {
   source                = "terraform-ibm-modules/landing-zone-vsi/ibm"
-  version               = "6.6.2"
+  version               = "7.0.3"
   resource_group_id     = module.resource_group.resource_group_id
   image_id              = module.vsi_image_selector.latest_image_id
   resource_tags         = var.resource_tags
