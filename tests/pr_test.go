@@ -67,7 +67,7 @@ func TestRunUpgradeAdvancedExample(t *testing.T) {
 	options := setupOptions(t, Prefix, advancedExampleDir)
 
 	options.TerraformVars["kms_encryption_enabled"] = true
-	options.TerraformVars["kms_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
+	options.TerraformVars["kms_key_crn"] = permanentResources["kp_dedicated_us_south_root_key_crn"]
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
