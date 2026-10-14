@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
@@ -47,6 +48,21 @@ func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptio
 		Region:        region,
 		ResourceGroup: resourceGroup,
 	})
+	// workaround for the provider issue : https://github.com/IBM-Cloud/terraform-provider-ibm/issues/7058
+	// Replica share deletes are eventually consistent on the IBM Cloud side, so destroy can fail transiently with
+	// these errors even though the same destroy succeeds when retried. Retry them instead of failing the test.
+	options.TerraformOptions = terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir:    dir,
+		TerraformBinary: options.TerraformBinary,
+		Upgrade:         true,
+		RetryableTerraformErrors: map[string]string{
+			".*share_moved_permanently.*":               "Replica share delete is still propagating.",
+			".*shares_with_replica_cannot_be_deleted.*": "Source share still sees its replica.",
+		},
+	})
+	// WithDefaultRetryableErrors resets these, so they must be set afterwards
+	options.TerraformOptions.MaxRetries = 5
+	options.TerraformOptions.TimeBetweenRetries = 30 * time.Second
 	return options
 }
 
@@ -67,7 +83,7 @@ func TestRunUpgradeAdvancedExample(t *testing.T) {
 	options := setupOptions(t, Prefix, advancedExampleDir)
 
 	options.TerraformVars["kms_encryption_enabled"] = true
-	options.TerraformVars["kms_key_crn"] = permanentResources["hpcs_south_root_key_crn"]
+	options.TerraformVars["kms_key_crn"] = permanentResources["kp_dedicated_us_south_root_key_crn"]
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
