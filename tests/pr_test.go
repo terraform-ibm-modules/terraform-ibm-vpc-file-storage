@@ -48,7 +48,7 @@ func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptio
 		Region:        region,
 		ResourceGroup: resourceGroup,
 	})
-
+	// workaround for the provider issue : https://github.com/IBM-Cloud/terraform-provider-ibm/issues/7058
 	// Replica share deletes are eventually consistent on the IBM Cloud side, so destroy can fail transiently with
 	// these errors even though the same destroy succeeds when retried. Retry them instead of failing the test.
 	options.TerraformOptions = terraform.WithDefaultRetryableErrors(t, &terraform.Options{
