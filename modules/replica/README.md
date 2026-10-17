@@ -41,7 +41,7 @@ You need the following permissions to run this module.
 ### Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
 | <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 2.1.0, < 3.0.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1, < 1.0.0 |
@@ -49,13 +49,13 @@ You need the following permissions to run this module.
 ### Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_share_crn_parser"></a> [share\_crn\_parser](#module\_share\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.9.0 |
 
 ### Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [ibm_iam_authorization_policy.cross_regional_replica_policy](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/iam_authorization_policy) | resource |
 | [ibm_is_share.replica](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share) | resource |
 | [time_sleep.wait_for_authorization_policy](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
@@ -64,7 +64,7 @@ You need the following permissions to run this module.
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial). | `list(string)` | `[]` | no |
 | <a name="input_cron_spec"></a> [cron\_spec](#input\_cron\_spec) | The cron specification expression for the file share replication schedule. | `string` | `"0 */5 * * *"` | no |
 | <a name="input_cross_regional_replica"></a> [cross\_regional\_replica](#input\_cross\_regional\_replica) | Set true, if provisioning the replica file share in a zone that is in a different region than the source file share. Note : source file share and its cross-regional replica must be in the same account. | `bool` | `false` | no |
@@ -79,7 +79,7 @@ You need the following permissions to run this module.
 ### Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_access_control_mode"></a> [access\_control\_mode](#output\_access\_control\_mode) | The access control mode for the replica file share |
 | <a name="output_access_tags"></a> [access\_tags](#output\_access\_tags) | Access management tags associated with the replica file share |
 | <a name="output_allowed_transit_encryption_modes"></a> [allowed\_transit\_encryption\_modes](#output\_allowed\_transit\_encryption\_modes) | The transit encryption modes allowed for this file share. |
