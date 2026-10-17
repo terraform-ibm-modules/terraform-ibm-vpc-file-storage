@@ -143,14 +143,14 @@ You need the following permissions to run this module.
 ### Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
 | <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 2.1.0, < 3.0.0 |
 
 ### Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_accessor"></a> [accessor](#module\_accessor) | ./modules/accessor | n/a |
 | <a name="module_replica"></a> [replica](#module\_replica) | ./modules/replica | n/a |
 | <a name="module_snapshot_restore"></a> [snapshot\_restore](#module\_snapshot\_restore) | ./modules/snapshot_restore | n/a |
@@ -159,13 +159,13 @@ You need the following permissions to run this module.
 ### Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [ibm_is_share_mount_target.mount_targets](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share_mount_target) | resource |
 
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial). | `list(string)` | `[]` | no |
 | <a name="input_allowed_access_protocols"></a> [allowed\_access\_protocols](#input\_allowed\_access\_protocols) | Allowed network file access protocol used the file storage instance. Note: the only supported values are `nfs4`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share#example-share-create-a-regional-file-share) | `string` | `null` | no |
 | <a name="input_cron_spec"></a> [cron\_spec](#input\_cron\_spec) | The cron specification expression for the file share replication schedule. Required when creating a replica share | `string` | `null` | no |
@@ -190,7 +190,7 @@ You need the following permissions to run this module.
 ### Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_file_share"></a> [file\_share](#output\_file\_share) | Details of the file share created for the selected mode. |
 | <a name="output_mount_targets"></a> [mount\_targets](#output\_mount\_targets) | Mount targets that were created and attached to this file storage instance. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

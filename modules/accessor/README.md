@@ -30,7 +30,7 @@ You need the following permissions to run this module.
 ### Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
 | <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 2.1.0, < 3.0.0 |
 
@@ -41,13 +41,13 @@ No modules.
 ### Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [ibm_is_share.accessor](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_share) | resource |
 
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_access_tags"></a> [access\_tags](#input\_access\_tags) | A list of access tags to apply to the Files Storage resources created by the module. For more information refer [here](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial). | `list(string)` | `[]` | no |
 | <a name="input_name"></a> [name](#input\_name) | The unique name used to identify the file storage for vpc instance. | `string` | `"share"` | no |
 | <a name="input_source_crn"></a> [source\_crn](#input\_source\_crn) | The Cloud Resource Name (CRN) of the source file share this source file share CRN is used to identify the cross account file share instance of which the binding needs to be created in the accessor account. | `string` | `null` | no |
@@ -56,7 +56,7 @@ No modules.
 ### Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_access_control_mode"></a> [access\_control\_mode](#output\_access\_control\_mode) | The access control mode for the accessor file share. |
 | <a name="output_access_tags"></a> [access\_tags](#output\_access\_tags) | Access management tags associated with the accessor file share. |
 | <a name="output_allowed_transit_encryption_modes"></a> [allowed\_transit\_encryption\_modes](#output\_allowed\_transit\_encryption\_modes) | The transit encryption modes allowed for this accessor file share. |
